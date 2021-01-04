@@ -1,0 +1,10 @@
+Discrim	to_vir
+Robusta	vir0
+Ogy	vir1
+Candicans	vir2
+Brabantica	vir3
+Unal	vir4
+Rap	vir5
+661301075	vir6
+BPR	vir7
+Hoogvorst	 vir8
