@@ -1,0 +1,348 @@
+---
+title: "Preliminary analysis 3 rust test 1"
+subtitle: "The third step of prelim analysis"
+author: "Firza Riany"
+date: "8/21/2020"
+output: 
+  html_document:
+    toc: TRUE
+    number_sections: TRUE
+---
+
+# Description
+The rust test was conducted in the Rust Lab INRAE Orléans during the period 15 - 30 July 2020. This script is intended for a preliminary analysis before proceeding to association modeling and reaction norm modeling under the project **B4EST WP 3: Black poplar/rust pathosystem.**  
+  
+Previous steps have been conducted to see:  
+1. Verify the pathotype of the strains (for each strain).  
+2. Check the incompatible genotypes.  
+3. Understand the global distribution of each phenotype.  
+4. Understand the variability in distribution of the phenotypes for each strain.  
+5. Observe the trait mean across blocks (Genotypic mean) and genotypes (Block mean).  
+6. Graphical inspection of genotypic mean across block.  
+
+# Objectives
+This step 3 is to:  
+1. Visualize the experimental plot in the lab.  
+2. Adjust the phenotypic values after eliminating block effects.  
+
+# Input
+```{r input}
+load(file = "prelim_step2.RData")  # RData prepared from prelim analysis step 2
+```
+
+# Libraries
+```{r library}
+library(ggplot2)  # To map the experimental design  
+library(breedR)  # To model the source of phenotypic variation
+```
+
+# Visualizing the experimental plot in the lab
+The genotypes were placed in the growth chamber with specialized coordinate positions.  
+The experimental design is as follows:  
+* 3 strains were used as ‘treatments’  
+* 168 genotypes were used for each strain  
+* 168 genotypes x 3 strains were replicated in 5 blocks  
+
+## Strain 09AX27
+```{r plot 09AX27}
+loop.vector <- 1:4  # creating the length of loop sequence
+
+for (i in loop.vector){  # for phenotype i in length
+  var <- s09AX27_loop[,i]  # storing the phenotypes in object var
+  title <- names(s09AX27_loop[i])  # preparing the title for plot title
+  plot <- qplot(X, Y, fill = var, geom = "tile", main = paste("09AX27", title),   # fill is based on variation in phenotypes
+                data = s09AX27_clean, xlab = "X", ylab = "Y") + 
+    scale_fill_gradient(low = "green", high = "red") 
+  print(plot)
+}
+```
+
+## Strain 93JE3
+```{r plot 93JE3}
+for (i in loop.vector){
+  var <- s93JE3_loop[,i]
+  title <- names(s93JE3_loop[i])
+  plot2 <- qplot(X, Y, fill = var, geom = "tile", main = paste("93JE3", title), 
+                data = s93JE3_clean, xlab = "X", ylab = "Y") + 
+    scale_fill_gradient(low = "green", high = "red") 
+  print(plot2)
+}
+```
+
+## Strain P72
+```{r plot P72}
+for (i in loop.vector){
+  var <- sP72_loop[,i]
+  title <- names(sP72_loop[i])
+  plot3 <- qplot(X, Y, fill = var, geom = "tile", main = paste("P72", title), 
+                 data = sP72_clean, xlab = "X", ylab = "Y") + 
+    scale_fill_gradient(low = "green", high = "red") 
+  print(plot3)
+}
+```
+  
+Pay attention to the different coordinate of each plot.  
+
+# Observing block effects using mixed-effects model
+```{r mixmod, message=FALSE, warning=FALSE}
+# strain_list <- strain_list <- list(s09AX27_clean, s93JE3_clean, sP72_clean) 
+# list: strain_list, 1 = 09AX27, 2 = 93JE3, 3 = P72
+# strain_list is available in prelim analysis step 2, already saved as .RData
+# excluding black points (BP) because it contains many NAs
+
+LP_mix <- list()  # creating an empty list for each model
+UN_mix <- list()
+US_mix <- list()
+for (i in 1:length(strain_list)) {  # loop created for strain i in length
+  LP_mix[[i]] <- remlf90(fixed = Laten_24.02.15_gp ~ 1,  # storing mixmod for LP
+                         random = ~ Genotype + Block,
+                         data = strain_list[[i]],
+                         method = "ai")
+  UN_mix[[i]] <- remlf90(fixed = total_NbSS ~ 1,  # continue to mixmod for UN
+                         random = ~ Genotype + Block,
+                         data = strain_list[[i]],
+                         method = "ai")
+  US_mix[[i]] <- remlf90(fixed = Taill_05.08.20_gp ~ 1,
+                         random = ~ Genotype + Block,
+                         data = strain_list[[i]],
+                         method = "ai")
+}
+
+summary(LP_mix[[1]])  # LP mixed model for strain 09AX27
+```
+
+## Variogram of the residuals (Strain 09AX27 for all traits)
+From LP_mix for strain 09AX27, residuals explain ~60% of phenotypic variance.  
+Would be good to inspect the residuals using variogram. 
+
+### Latent Period
+```{r variogram LP 09AX27}
+variogram(LP_mix[[1]], coord = s09AX27_clean[, colnames(s09AX27_clean) %in% c("X", "Y")],
+          R = 30)
+```
+Seem that residuals come from environmental variation (related to the coordinates where the genotypes were placed).  
+Checking other models (UN and US).  
+
+### Uredinia Number
+```{r UN_mix 09AX27}
+summary(UN_mix[[1]])  # UN mixmod strain 09AX27
+
+variogram(UN_mix[[1]], coord = s09AX27_clean[, colnames(s09AX27_clean) %in% c("X", "Y")], 
+          R = 30)
+```
+
+### Uredinia Size
+```{r US_mix 09AX27}
+summary(US_mix[[1]])  # US mixmod strain 09AX27
+
+variogram(US_mix[[1]], coord = s09AX27_clean[, colnames(s09AX27_clean) %in% c("X", "Y")], 
+          R = 30)
+```
+
+## Variogram of the residuals (Strain 93JE3 for all traits)
+### Latent Period
+```{r LP_mix 93JE3}
+summary(LP_mix[[2]])  # LP mixmod strain 93JE3
+
+variogram(LP_mix[[2]], coord = s93JE3_clean[, colnames(s93JE3_clean) %in% c("X", "Y")], 
+          R = 30)
+```
+
+### Uredinia Number
+```{r UN_mix 93JE3}
+summary(UN_mix[[2]])  # UN mixmod strain 93JE3
+
+variogram(UN_mix[[2]], coord = s93JE3_clean[, colnames(s93JE3_clean) %in% c("X", "Y")], 
+          R = 30)
+```
+
+### Uredinia size
+```{r US_mix 93JE3}
+summary(US_mix[[2]])  # US mixmod strain 93JE3
+
+variogram(US_mix[[2]], coord = s93JE3_clean[, colnames(s93JE3_clean) %in% c("X", "Y")], 
+          R = 30)
+```
+
+## Variogram of the residuals (Strain P72 for all traits)
+### Latent Period
+```{r LP_mix P72}
+summary(LP_mix[[3]])  # LP mixmod P72
+
+variogram(LP_mix[[3]], coord = sP72_clean[, colnames(sP72_clean) %in% c("X", "Y")], 
+          R = 30)
+```
+
+### Uredinia Number
+```{r UN_mix P72}
+summary(UN_mix[[3]])  # UN mixmod strain P72
+
+variogram(UN_mix[[3]], coord = sP72_clean[, colnames(sP72_clean) %in% c("X", "Y")], 
+          R = 30)
+```
+
+### Uredinia Size
+```{r US_mix P72}
+summary(US_mix[[3]])  # US mixmod strain P72
+
+variogram(US_mix[[3]], coord = sP72_clean[, colnames(sP72_clean) %in% c("X", "Y")], 
+          R = 30)
+```
+
+# Adjusting the phenotypes from block effects
+Because blocks are a systematic variation that affects the variation in phenotypes, we have to remove them.
+```{r functions adj}
+# Functions for adjustment ----
+fun.coord <- function(X, Y){  # X and Y are coordinates from the dataset
+  paste(X, Y, sep = "-")  # Using functions: X = dataset$X, Y = dataset$Y
+}
+
+# models: LP_mix (list of 3), UN_mix, US_mix, BP_mix
+# LP_mix[[1]] = s09AX27, [[2]] = s93JE3, [[3]] sP72
+intercept <- function(mix){  # mix being the name of model
+    mix$fixed$Intercept[[1]][1, "value"]  # Example, mix = LP_mix[[1]]
+}
+
+BLUP.genot <- function(mix, x){  # x being the name of data frame object
+  merge(x, data.frame("Genotype" = rownames(mix$ranef$Genotype[[1]]),
+                      "BLUP_Genotype" = mix$ranef$Genotype[[1]]$value),
+        by = "Genotype")
+}
+
+BLUP.block <- function(mix, x){
+  merge(x, data.frame("Block" = rownames(mix$ranef$Block[[1]]),
+                      "BLUP¨.block" = mix$ranef$Block[[1]]$value),
+        by = "Block")
+}
+
+
+BLUP.resid <- function(data, clean, mix){  # clean and data being the name of data frame object
+  merge(data, data.frame("coord" = fun.coord(clean$X, clean$Y),
+                      "BLUP_resid" = residuals(mix)),
+        by = "coord")
+}
+
+adj <- function(x){  # x being the name of data frame object
+  x$intercept + x$BLUP_Genotype + x$BLUP_resid
+}
+```
+
+## Adjusting LP
+```{r adj LP}
+adj_LP <- list(s09AX27_clean[, -c(6:15)],  # creating a list of dataframe to store loop result
+               s93JE3_clean[, -c(6:15)],
+               sP72_clean[, -c(6:15)])
+
+for (x in 1:length(adj_LP)){  # x in data frame 1 - 3
+  adj_LP[[x]]$coord <- fun.coord(X = adj_LP[[x]]$X, Y = adj_LP[[x]]$Y)  # adding coordinates to data frame x
+  adj_LP[[x]]$intercept <- intercept(mix = LP_mix[[x]])  # adding intercept extracted from mixmodel
+  adj_LP[[x]] <- BLUP.genot(mix = LP_mix[[x]], x = adj_LP[[x]])  # adding BLUP estimates extracted from mixmodel
+  adj_LP[[x]] <- BLUP.block(mix = LP_mix[[x]], x= adj_LP[[x]])
+  adj_LP[[x]] <- BLUP.resid(data = adj_LP[[x]], clean = adj_LP[[x]],  # adding residuals extracted from mixmodel
+                             mix = LP_mix[[x]])
+  adj_LP[[x]]$adj_LP <- adj(x = adj_LP[[x]])  # adjusting LP by removing block estimates
+}
+```
+
+## Adjusting UN
+```{r adj UN}
+adj_UN <- list(s09AX27_clean[, -c(6:15)],
+               s93JE3_clean[, -c(6:15)],
+               sP72_clean[, -c(6:15)])
+
+for (x in 1:length(adj_UN)){
+  adj_UN[[x]]$coord <- fun.coord(adj_UN[[x]]$X, adj_UN[[x]]$Y)
+  adj_UN[[x]]$intercept <- intercept(mix = UN_mix[[x]])
+  adj_UN[[x]] <- BLUP.genot(UN_mix[[x]], adj_UN[[x]])
+  adj_UN[[x]] <- BLUP.block(UN_mix[[x]], adj_UN[[x]])
+  adj_UN[[x]] <- BLUP.resid(data = adj_UN[[x]], clean = adj_UN[[x]], mix = UN_mix[[x]])
+  adj_UN[[x]]$adj_UN <- adj(adj_UN[[x]])
+}
+```
+
+## Adjusting US
+```{r adj US}
+adj_US <- list(s09AX27_clean[, -c(6:15)],
+               s93JE3_clean[, -c(6:15)],
+               sP72_clean[, -c(6:15)])
+
+for (x in 1:length(adj_US)){
+  adj_US[[x]]$coord <- fun.coord(adj_US[[x]]$X, adj_US[[x]]$Y)
+  adj_US[[x]]$intercept <- intercept(mix = US_mix[[x]])
+  adj_US[[x]] <- BLUP.genot(US_mix[[x]], adj_US[[x]])
+  adj_US[[x]] <- BLUP.block(US_mix[[x]], adj_US[[x]])
+  adj_US[[x]] <- BLUP.resid(data = adj_US[[x]], clean = adj_US[[x]], mix = US_mix[[x]])
+  adj_US[[x]]$adj_US <- adj(adj_US[[x]])
+}
+```
+
+
+## Extracting the adjusted traits
+```{r head 09AX27}
+# Strain 09AX27
+adj_s09AX27 <- s09AX27_clean[, -c(6:15)]
+adj_s09AX27$Latence <- adj_LP[[1]]$adj_LP
+adj_s09AX27$NbSS <- adj_UN[[1]]$adj_UN
+adj_s09AX27$Taille <- adj_US[[1]]$adj_US
+
+head(adj_s09AX27)  # preview of the dataset
+
+par(mfrow = c(2,2))  
+hist(adj_s09AX27$Latence)  # distribution of the adjusted traits
+hist(adj_s09AX27$NbSS)
+hist(adj_s09AX27$Taille)
+```
+
+```{r extract 09AX27, eval=FALSE, message=FALSE, warning=FALSE}
+write.table(adj_s09AX27, "adj_traits_s09AX27.txt", sep = "\t", na = "NA", 
+            quote = FALSE, row.names = FALSE)
+```
+
+```{r head 93JE3}
+# Strain 93JE3
+adj_s93JE3 <- s93JE3_clean[, -c(6:15)]
+adj_s93JE3$Latence <- adj_LP[[2]]$adj_LP
+adj_s93JE3$NbSS <- adj_UN[[2]]$adj_UN
+adj_s93JE3$Taille <- adj_US[[2]]$adj_US
+
+head(adj_s93JE3)
+
+par(mfrow = c(2,2)) 
+hist(adj_s93JE3$Latence)
+hist(adj_s93JE3$NbSS)
+hist(adj_s93JE3$Taille)
+```
+
+```{r extract 93JE3, message=FALSE, warning=FALSE, eval=FALSE}
+write.table(adj_s93JE3, "adj_traits_s93JE3.txt", sep = "\t", na = "NA", 
+            quote = FALSE, row.names = FALSE)
+```
+
+```{r head P72}
+# Strain P72
+adj_sP72 <- sP72_clean[, -c(6:15)]
+adj_sP72$Latence <- adj_LP[[3]]$adj_LP
+adj_sP72$NbSS <- adj_UN[[3]]$adj_UN
+adj_sP72$Taille <- adj_US[[3]]$adj_US
+
+head(adj_sP72)
+
+par(mfrow = c(2,2)) 
+hist(adj_sP72$Latence)
+hist(adj_sP72$NbSS)
+hist(adj_sP72$Taille)
+```
+
+```{r extract P72, eval=FALSE, message=FALSE, warning=FALSE}
+write.table(adj_sP72, "adj_traits_sP72.txt", sep = "\t", na = "NA", 
+            quote = FALSE, row.names = FALSE)
+```
+
+# Saving .RData for future analysis
+```{r save RData, message=FALSE, warning=FALSE, eval=FALSE}
+save(s09AX27_clean, s93JE3_clean, sP72_clean, strain_list,
+     s09AX27_loop, s93JE3_loop, sP72_loop,
+     adj_LP, adj_UN, adj_US,
+     adj_s09AX27, adj_s93JE3, adj_sP72,
+     file = "prelim_step3.RData")
+```

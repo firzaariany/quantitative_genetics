@@ -1,0 +1,352 @@
+---
+title: "EDA part 1"
+subtitle: "First step of EDA, details below"
+author: "Firza Riany"
+date: "8/17/2020"
+output: 
+  html_document:
+    toc: TRUE
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Description.
+
+The general aim of the following study was to find the genetic potential of black poplar's resistance (*Populus nigra*) when they are infected by rust.
+
+```{r message=FALSE, warning=FALSE, include=FALSE, out.width=}
+library(jpeg)
+library(knitr)
+
+include_graphics(c("rust_infection_2.jpg", "Screenshot_2.png", "rust_infection_1.jpg"))
+``` 
+  
+Here are the illustrations when black poplar leaves are infected by rust. The picture on the left is an overall infection, and the picture on the right is a zoomed visualization.  
+  
+Before proceeding to a more sophisticated modeling, I conducted an Exploratory Data Analysis (EDA) to gather insights from the dataset.  
+
+---
+
+**About the raw dataset and the species used**  
+
+The raw data consists of the measurement in the lab for poplar resistance.   
+  
+The variables needed in the analysis were:  
+- **Latent period, coded as Laten**    
+- **Number of spores, coded as NbSS**  
+_ **Size of spores, coded as Taiil**  
+  
+These are the indication of infection on poplar leaves.  
+  
+The spesies is black poplar (*Populus nigra*) that was collected from several natural populations and sources in Western Europe.
+
+**Experimental design**
+
+The experimental design was as follow: 168 genotypes (including the discriminants) spread across 5 blocks were inoculated with 3 rust strains. These make up a total 2520 observations of 15 variables.  
+  
+Note. not all variables are going to be used, we will see as we proceed through this script.  
+  
+The objectives of this first step of prelim analysis were:  
+
+## Objectives.
+1. Check the resistant vs susceptible genotypes.  
+2. Understand the global distribution of each phenotype.  
+3. Understand the variability in distribution of the phenotypes for each strain.  
+  
+# Preparation (libraries, working directory, data set).
+```{r preparation, message=FALSE, warning=FALSE}
+# Libraries
+library(plyr)  # to create a frequency table of resistant vs susceptible genotypes
+library(naniar)  # to replace values with NA
+library(ggplot2)  # to make graphs
+
+# Loading the raw data set ----
+rust_test1 <- read.delim2("B4est_test1_LectureJ13_J14_commented.txt", na = "NA")
+
+head(rust_test1)
+
+# Selection of columns ----
+test1_selec <- rust_test1[ ,-c(12, 13, 15)]  # getting only the columns that we need
+
+head(test1_selec)
+```
+
+# Checking the resistant vs susceptible genotypes.
+
+This step will result in two groups of genotypes; resistant and susceptible genotypes.  
+  
+*Resistant genotypes are the genotypes that are not interacting with the rust, thus do not have symptoms.*  
+  
+*Susceptible genotypes are the genotypes that are interacting with the rust, thus causing symptoms.*  
+  
+The checking was carried out after excluding the control genotypes.  
+
+## Rust 09AX27
+```{r compatibility 09AX27}
+# Subsetting the raw dataset by strain
+
+test1_09AX27 <- test1_selec[which(test1_selec$Strain == "09AX27"),]
+test1_93JE3 <- test1_selec[which(test1_selec$Strain == "93JE3"),]
+test1_P72 <- test1_selec[which(test1_selec$Strain == "P72"),]
+
+# From control (Genotype == Robusta) and discriminants (Genotype == discrim$Discrim)
+
+discrim <- read.table("Tab_discrim_vir.txt",
+                      header = TRUE,
+                      row.names = NULL)
+
+# Create a new column to differentiate normal genotypes from control
+
+test1_09AX27[ ,13] <- "NA"
+
+for (i in c(1:nrow(test1_09AX27))){
+  if(test1_09AX27$Genotype[i] %in% discrim$Discrim)  # if the genotype name in 09AX27 is the same as those in discrim names in discriminant file
+    test1_09AX27[i,13] <- "discrim"  # then print discrim in each row of column 13
+  if(test1_09AX27$Genotype[i] == "Robusta")  # if the genotype name is robusta
+    test1_09AX27[i,13] <- "control"  # then print control in each row of column 13
+}
+
+# Before graphical inspection, paste the label resistant and susceptible to the relevant genotypes
+
+test1_09AX27_nodisc <- test1_09AX27[-which(test1_09AX27[ ,13] %in%  # the data set that excludes control and discriminant genotypes
+                                             c("control", "discrim")), ]
+
+names(test1_09AX27_nodisc)[13] = "Res_vs_sus"
+
+for (i in c(1:nrow(test1_09AX27_nodisc))) {
+  if(test1_09AX27_nodisc$Laten_24.02.15_gp[i] == -5)
+    test1_09AX27_nodisc[i,13] = "Resistant"
+  
+  if(test1_09AX27_nodisc$Laten_24.02.15_gp[i] != -5)
+    test1_09AX27_nodisc[i,13] = "Susceptible"
+}
+
+# Graphical inspection resistant vs susceptible genotypes
+
+(resist_09AX27 = ggplot(test1_09AX27_nodisc, aes(x = Res_vs_sus)) +
+  geom_bar(aes(fill = Res_vs_sus)) +
+  geom_text(stat = "count", aes(label = ..count..), vjust = -0.5) +
+  labs(title = "Resistant vs susceptible poplars, rust = 09AX27",
+       x = "Resistant vs Susceptibe",
+       y = "Counts") +
+  scale_fill_manual(values = c("#87CEEB", "#FF6A6A"),
+                    breaks = c("Resistant", "Susceptible"),
+                    name = "Resistant vs Susceptible",
+                    labels = c("Resistant", "Susceptible")) +
+  theme_classic() +
+  theme(axis.title.x = element_blank()))
+```
+
+# BOOKMARK
+
+## Strain 93JE3
+```{r compatibility 93JE3}
+# Create a new column to differentiate normal genotypes from discriminants and control (subject for inspection)
+# From control (Genotype == Robusta) and discriminants (Genotype == discrim$Discrim)
+test1_93JE3[ ,13] <- "NA"
+for (i in c(1:nrow(test1_93JE3))){
+  if(test1_93JE3$Genotype[i] %in% discrim$Discrim)
+    test1_93JE3[i,13] <- "discrim"
+  if(test1_93JE3$Genotype[i] == "Robusta")
+    test1_93JE3[i,13] <- "control"
+}
+
+# Graphical inspection
+test1_93JE3_nodisc <- test1_93JE3[-which(test1_93JE3[ ,13] %in%
+                                             c("control", "discrim")), ]
+
+b <- barplot(c(length(which(test1_93JE3_nodisc$Laten_24.02.15_gp == -5)),
+               length(which(test1_93JE3_nodisc$Laten_24.02.15_gp != -5))),
+             names.arg = c("incompatible", "compatible"),
+             main = "Compatibility of strain 93JE3")
+text(b, labels = c(length(which(test1_93JE3_nodisc$Laten_24.02.15_gp == -5)),
+                   length(which(test1_93JE3_nodisc$Laten_24.02.15_gp != -5))),
+     adj = 0,
+     pos = 3,
+     offset = 3,
+     cex = 1.5)
+```
+
+## Strain P72
+```{r compatibility P72}
+# Create a new column to differentiate normal genotypes from discriminants and control (subject for inspection)
+# From control (Genotype == Robusta) and discriminants (Genotype == discrim$Discrim)
+test1_P72[ ,13] <- "NA"
+for (i in c(1:nrow(test1_P72))){
+  if(test1_P72$Genotype[i] %in% discrim$Discrim)
+    test1_P72[i,13] <- "discrim"
+  if(test1_P72$Genotype[i] == "Robusta")
+    test1_P72[i,13] <- "control"
+}
+
+# Graphical inspection
+test1_P72_nodisc <- test1_P72[-which(test1_P72[ ,13] %in%
+                                       c("control", "discrim")), ]
+c <- barplot(c(length(which(test1_P72_nodisc$Laten_24.02.15_gp == -5)),
+               length(which(test1_P72_nodisc$Laten_24.02.15_gp != -5))),
+             names.arg = c("incompatible", "compatible"),
+             main = "Compatibility of strain P72")
+text(c, labels = c(length(which(test1_P72_nodisc$Laten_24.02.15_gp == -5)),
+                   length(which(test1_P72_nodisc$Laten_24.02.15_gp != -5))),
+     adj = 0,
+     pos = 3,
+     offset = 3,
+     cex = 1.5)
+```
+
+## Counting the genotypes with LP = -5 (incompatible genotypes)
+### Strain 09AX27
+```{r incomp 09AX27}
+incomp_09AX27 <- plyr::count(test1_09AX27_nodisc$Genotype[
+  which(test1_09AX27_nodisc$Laten_24.02.15_gp == -5)])
+incomp_09AX27
+
+```
+
+### Strain 93JE3
+```{r incomp 93JE3}
+incomp_93JE3 <- plyr::count(test1_93JE3_nodisc$Genotype[
+  which(test1_93JE3_nodisc$Laten_24.02.15_gp == -5)])
+incomp_93JE3
+```
+
+### Strain P72
+```{r incomp P72}
+incomp_P72 <- plyr::count(test1_P72_nodisc$Genotype[
+  which(test1_P72_nodisc$Laten_24.02.15_gp == -5)])
+incomp_P72
+```
+
+# The global distribution of the raw data
+In this step, we will see the global distribution of trait variation.    
+  
+We also need to:  
+1. Replace the value -5 to NA. Replace 0 to NA as well for Uredinia Size.    
+2. Total number of uredinia by adding the sporulating uredinia (NbSS) and sporulating uredinia underwater (NbSO).  
+3. Total number of black points by substracting the observed black points (NbPtN) by the black points found before first appearance of sporulating uredinia (points.noirs.avant.le.test).  
+4. Removing discriminant and control genotypes.  
+
+```{r global dist prep}
+test1_selec_NA <- test1_selec  # creating a new data frame to avoid confusion
+test1_selec_NA <-  test1_selec_NA %>% 
+  naniar::replace_with_na(replace = list(Laten_24.02.15_gp = -5,
+                                         NbSS_24.02.15_gp = -5,
+                                         NbSO_24.02.15_gp = -5,
+                                         NbPtN_24.02.15_gp = -5,
+                                         Taill_05.08.20_gp = c(-5,0)))
+
+## Total uredinia number = adding NbSS and NbSoS
+test1_selec_NA$total_NbSS <- test1_selec_NA$NbSS_24.02.15_gp + 
+  test1_selec_NA$NbSO_24.02.15_gp
+
+## Total black points = substracting NbPtN by point noires avant le test
+test1_selec_NA$PtN_real <- test1_selec_NA$NbPtN_24.02.15_gp - 
+  test1_selec_NA$points.noirs.avant.le.test
+
+# Replacing negative values in PtN_real to 0
+test1_selec_NA$PtN_real <- replace(test1_selec_NA$PtN_real, 
+                                   test1_selec_NA$PtN_real < 0, 0)
+
+## Removing the discriminants and the control
+test1_selec_NA[ ,15] <- "NA"
+for (i in c(1:nrow(test1_selec_NA))){
+  if(test1_selec_NA$Genotype[i] %in% discrim$Discrim)
+    test1_selec_NA[i,15] <- "discrim"
+  if(test1_selec_NA$Genotype[i] == "Robusta")
+    test1_selec_NA[i,15] <- "control"
+}
+
+test1_NA_nodisc <- test1_selec_NA[-which(test1_selec_NA[ ,15] %in%
+                                           c("control", "discrim")), ]
+
+## Histogram of each trait
+par(mfrow = c(2,2))
+
+test1_loop <- data.frame("LP" = test1_NA_nodisc$Laten_24.02.15_gp,
+                         "UN" = test1_NA_nodisc$total_NbSS,
+                         "US" = test1_NA_nodisc$Taill_05.08.20_gp,
+                         "Black_Points" = test1_NA_nodisc$PtN_real)
+loop.vector <- 1:4
+
+for (i in loop.vector){
+  x <- test1_loop[,i]
+  title <- names(test1_loop[i])
+  hist(x,
+       main = title,
+       xlab = i)
+}
+```
+
+# The distribution of trait variation per strain
+We will subset the raw data set that has been cleaned (i.e. test1_NA_nodisc) then we will proceed to the graphical inspection of each trait for each strain.
+
+```{r data prep}
+## Subsetting the clean dataset with no discriminant and control genotypes based on strains
+s09AX27_clean <- test1_NA_nodisc[which(test1_NA_nodisc$Strain == "09AX27"),]
+s93JE3_clean <- test1_NA_nodisc[which(test1_NA_nodisc$Strain == "93JE3"),]
+sP72_clean <- test1_NA_nodisc[which(test1_NA_nodisc$Strain == "P72"),]
+```
+
+## Graphical inspection strain 09AX27
+```{r trait dist 09AX27}
+s09AX27_loop <- data.frame("LP" = s09AX27_clean$Laten_24.02.15_gp,
+                           "UN" = s09AX27_clean$total_NbSS,
+                           "US" = s09AX27_clean$Taill_05.08.20_gp,
+                           "Black_Points" = s09AX27_clean$PtN_real)
+loop.vector <- 1:4
+
+par(mfrow = c(2,2))
+for (i in loop.vector){
+  x <- s09AX27_loop[,i]
+  title <- names(s09AX27_loop[i])
+  hist(x,
+       main = paste("09AX27", title),
+       xlab = "Scores")
+}
+```
+
+## Graphical inspection strain 93JE3
+```{r trait dist 93JE3}
+s93JE3_loop <- data.frame("LP" = s93JE3_clean$Laten_24.02.15_gp,
+                          "UN" = s93JE3_clean$total_NbSS,
+                          "US" = s93JE3_clean$Taill_05.08.20_gp,
+                          "Black_Points" = s93JE3_clean$PtN_real)
+
+par(mfrow = c(2,2))
+for (i in loop.vector){
+  x <- s93JE3_loop[,i]
+  title <- names(s93JE3_loop[i])
+  hist(x,
+       main = paste("93JE3", title),
+       xlab = "Scores")
+}
+```
+
+## Graphical inspection strain P72
+```{r trait dist P72}
+sP72_loop <- data.frame("LP" = sP72_clean$Laten_24.02.15_gp,
+                        "UN" = sP72_clean$total_NbSS,
+                        "US" = sP72_clean$Taill_05.08.20_gp,
+                        "Black_Points" = sP72_clean$PtN_real)
+
+par(mfrow = c(2,2))
+for (i in loop.vector){
+  x <- sP72_loop[,i]
+  title <- names(sP72_loop[i])
+  hist(x,
+       main = paste("P72", title),
+       xlab = "Scores")
+}
+```
+
+# Saving the Rdata for prelim analysis step 2
+```{r, saving RData}
+save(test1_selec_NA, test1_NA_nodisc,
+     s09AX27_clean, s93JE3_clean, sP72_clean,
+     s09AX27_loop, s93JE3_loop, sP72_loop,
+     s09AX27_means, s93JE3_means, sP72_means,
+     file = "prelim_step1.RData")
+```
