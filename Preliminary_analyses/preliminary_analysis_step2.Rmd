@@ -10,15 +10,19 @@ output:
 ---
 
 # Description
-The rust test was conducted in the Rust Lab INRAE Orléans during the period 15 - 30 July 2020. This script is intended for a preliminary analysis before proceeding to association modeling and reaction norm modeling under the project **B4EST WP 3: Black poplar/rust pathosystem**.  
-  
+Before I dive into it, I should remind you that the experimental design I used
+wes 154 individuals spread across 5 blocks. Each individual in each block was 
+infected by 3 pathogens. I collected 3 variables: latent period (LP), uredinia
+number (UN), and uredinia size (US) to observe poplar's resistance.
+
 # Objectives  
-1. Observe the trait mean across blocks (Genotypic mean) and genotypes (Block mean)
-2. Graphical inspection of genotypic mean across block
+1. Observe the mean for each variable across blocks (individual means) and
+individuals (block means) 
+2. Graphical inspection of individual means across blocks
 
 # Input
 ```{r data input}
-load(file = "prelim_step1.RData")  # RData prepared from previous prelim analysis
+load(file = "rdata_prelim_1.RData")  # RData prepared from previous prelim analysis
 ```
 
 # Libraries
@@ -26,20 +30,24 @@ load(file = "prelim_step1.RData")  # RData prepared from previous prelim analysi
 library(ggplot2)  # To map the plot
 ```
 
-# Comparing the genotypic mean and block mean in graphs
-Visual comparison to see whether genotypic mean and block mean are different or not. Genotypes and blocks have to be converted from character to factor.
+# Comparing the individual and block mean in graphs
+Visual comparison to see whether individual mean and block mean are different or not.
 
 ## Strain 09AX27
 ```{r plot.design 09AX27, fig.height=8, fig.width=10, warning=FALSE}
 str(s09AX27_clean)
+
+# Individuals and blocks have to be converted from character to factor.
+
 s09AX27_clean$Block <- as.factor(s09AX27_clean$Block)
 s09AX27_clean$Genotype <- as.factor(s09AX27_clean$Genotype)
 
 par(mfrow = c(2,2))
+
+
 plot.design(s09AX27_clean, y = s09AX27_clean$Laten_24.02.15_gp, ylab = "Mean LP")
 plot.design(s09AX27_clean, y = s09AX27_clean$total_NbSS, ylab = "Mean UN")
 plot.design(s09AX27_clean, y = s09AX27_clean$Taill_05.08.20_gp, ylab = "Mean US")
-plot.design(s09AX27_clean, y = s09AX27_clean$PtN_real, ylab = "Mean Black Points")
 ```
 
 ## Strain 93JE3
