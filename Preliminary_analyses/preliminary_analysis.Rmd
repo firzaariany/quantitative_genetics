@@ -269,8 +269,7 @@ the pathogen. When the poplars are interactive, it means that they can behave
 differently or they can fight the pathogen with different abilities. Let's stick
 with this definition now.
 
-## Counting the completely resistant individuals (meaning that they are not
-interacting with the pathogen)
+## Counting the completely resistant individuals (meaning that they are not interacting with the pathogen)
 
 ```{r incomp all strains}
 # Calculating the numbers of resistant individuals for pathogen 09AX27
@@ -305,8 +304,8 @@ Turned out three poplar individuals were completely resistant across all the
 pathogens. It means that they were completely not interacting with the pathogens.
 Pathogens' activities were indifferent to them.
 
-# The global distribution of the raw data
-In this step, we will see the global distribution of trait variation.    
+# Graphical distribution of the variables for each pathogen
+In this step, I want to see the distribution of the variables.
 
 ```{r global dist prep}
 # Some preparation
@@ -371,9 +370,14 @@ for (i in loop.vector){
 }
 ```
 
-# The distribution of trait variation per pathogen
-We will subset the raw data set that has been cleaned (i.e. test1_NA_nodisc)
-then we will proceed to the graphical inspection of each trait for each pathogen.
+# Graphical distribution of the variables for each pathogen
+So I see that latent period (LP) and uredinia number (UN) are skewed to the left,
+while uredinia size (US) was discrete. I will know what happens to these in  
+future analysis. 
+
+Now I want to cross check the previous distribution (that was not considering
+the different pathogens I used) with the following distribution where I sparse the 
+distribution based on the pathogens. 
 
 ```{r data prep}
 ## Subsetting the clean dataset based on pathogen
@@ -437,6 +441,10 @@ for (i in loop.vector){
        xlab = "Scores")
 }
 ```
+When I sparse the distribution of each variable based on the pathogens, the
+variables still follow the similar pattern as the previous one (without sparsing
+based on the pathogens). So probably it is a normal pattern in the interaction
+between poplars and their pathogen. 
 
 ```{r eval=FALSE, include=FALSE}
 # Saving the Rdata for prelim analysis step 2
