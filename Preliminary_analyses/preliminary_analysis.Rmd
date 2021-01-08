@@ -15,7 +15,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Description.
 
-The general aim of the following study was to find the genetic potential of black poplar's resistance (*Populus nigra*) when they are infected by rust.
+The general aim of the following study was to find the genetic potential of 
+black poplar's resistance (*Populus nigra*) when they are infected by rust.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE, out.width="30%"}
 library(jpeg)
@@ -24,9 +25,12 @@ library(knitr)
 include_graphics(c("rust_infection_2.jpg", "Screenshot_2.png", "rust_infection_1.jpg"))
 ``` 
   
-Here are the illustrations when black poplar leaves are infected by rust. The picture on the left is an overall infection, and the picture on the right is a zoomed visualization.  
+Here are the illustrations when black poplar leaves are infected by rust.
+The picture on the left is an overall infection, and the picture on the right
+is a zoomed visualization.  
   
-Before proceeding to a more sophisticated modeling, I conducted an Exploratory Data Analysis (EDA) to gather insights from the dataset.  
+Before proceeding to a more sophisticated modeling, I conducted an Exploratory
+Data Analysis (EDA) to gather insights from the dataset.  
 
 ---
 
@@ -41,13 +45,17 @@ _ **Size of spores, coded as Taiil**
   
 These are the indication of infection on poplar leaves.  
   
-The spesies is black poplar (*Populus nigra*) that was collected from several natural populations and sources in Western Europe.
+The spesies is black poplar (*Populus nigra*) that was collected from several
+natural populations and sources in Western Europe.
 
 **Experimental design**
 
-The experimental design was as follow: 168 individuals (including the discriminants) spread across 5 blocks were inoculated with 3 rust strains. These make up a total 2520 observations of 15 variables.  
+The experimental design was as follow: 168 individuals (including the
+discriminants) spread across 5 blocks were inoculated with 3 rust strains.
+These make up a total 2520 observations of 15 variables.  
   
-Note. not all variables are going to be used, we will see as we proceed through this script.  
+Note. not all variables are going to be used, we will see as we proceed through
+this script.  
   
 The objectives of this first step of prelim analysis were:  
 
@@ -77,15 +85,16 @@ head(test1_selec)
 
 # Checking the resistant vs susceptible individuals.
 
-This step will result in two groups of individuals; resistant and susceptible individuals.  
+This step will result in two groups of individuals; resistant and susceptible
+individuals.  
   
-*Resistant individuals are the individuals that are not interacting with the rust, thus do not have symptoms.*  
+*Resistant individuals are the individuals that are not interacting with the pathogen, thus do not have symptoms.*  
   
-*Susceptible individuals are the individuals that are interacting with the rust, thus causing symptoms.*  
+*Susceptible individuals are the individuals that are interacting with the pathogen, thus causing symptoms.*  
   
 The checking was carried out after excluding the control individuals.  
 
-## Rust 09AX27
+## Pathogen 09AX27
 ```{r compatibility 09AX27}
 # Subsetting the raw dataset by pathogen
 
@@ -130,7 +139,7 @@ for (i in c(1:nrow(test1_09AX27_nodisc))) {
 resist_09AX27 = ggplot(test1_09AX27_nodisc, aes(x = Res_vs_sus)) +
   geom_bar(aes(fill = Res_vs_sus)) +
   geom_text(stat = "count", aes(label = ..count..), vjust = 0.25) +
-  labs(title = "Rust = 09AX27",
+  labs(title = "Pathogen = 09AX27",
        x = "Resistant vs Susceptibe",
        y = "Counts") +
   scale_fill_manual(values = c("#87CEEB", "#FF6A6A"),
@@ -144,7 +153,8 @@ resist_09AX27 = ggplot(test1_09AX27_nodisc, aes(x = Res_vs_sus)) +
 
 ## Strain 93JE3
 ```{r compatibility 93JE3}
-# Create a new column to differentiate normal individuals from discriminants and control (subject for inspection)
+# Create a new column to differentiate normal individuals from discriminants 
+# and control (subject for inspection)
 
 # From control (Genotype == Robusta) and discriminants (Genotype == discrim$Discrim)
 
@@ -157,7 +167,8 @@ for (i in c(1:nrow(test1_93JE3))){
     test1_93JE3[i,13] <- "control"
 }
 
-# Before graphical inspection, paste the label resistant and susceptible to the relevant individuals
+# Before graphical inspection, paste the label resistant and susceptible to
+# the relevant individuals
 
 test1_93JE3_nodisc <- test1_93JE3[-which(test1_93JE3[ ,13] %in%
                                            c("control", "discrim")), ]
@@ -177,7 +188,7 @@ for (i in c(1:nrow(test1_93JE3_nodisc))) {
 resist_93JE3 = ggplot(test1_93JE3_nodisc, aes(x = Res_vs_sus)) +
   geom_bar(aes(fill = Res_vs_sus)) +
   geom_text(stat = "count", aes(label = ..count..), vjust = 0.25) +
-  labs(title = "Rust = 09AX27",
+  labs(title = "Pathogen = 09AX27",
        x = "Resistant vs Susceptibe",
        y = "Counts") +
   scale_fill_manual(values = c("#87CEEB", "#FF6A6A"),
@@ -191,7 +202,8 @@ resist_93JE3 = ggplot(test1_93JE3_nodisc, aes(x = Res_vs_sus)) +
 
 ## Strain P72
 ```{r compatibility P72}
-# Create a new column to differentiate normal individuals from discriminants and control (subject for inspection)
+# Create a new column to differentiate normal individuals from discriminants
+# and control (subject for inspection)
 
 # From control (Genotype == Robusta) and discriminants (Genotype == discrim$Discrim)
 
@@ -203,7 +215,8 @@ for (i in c(1:nrow(test1_P72))){
     test1_P72[i,13] <- "control"
 }
 
-# Before graphical inspection, paste the label resistant and susceptible to the relevant individuals
+# Before graphical inspection, paste the label resistant and susceptible to
+# the relevant individuals
 
 test1_P72_nodisc <- test1_P72[-which(test1_P72[ ,13] %in%
                                        c("control", "discrim")), ]
@@ -223,7 +236,7 @@ for (i in c(1:nrow(test1_P72_nodisc))) {
 resist_P72 = ggplot(test1_P72_nodisc, aes(x = Res_vs_sus)) +
   geom_bar(aes(fill = Res_vs_sus)) +
   geom_text(stat = "count", aes(label = ..count..), vjust = 0.25) +
-  labs(title = "Rust = 09AX27",
+  labs(title = "Pathogen = 09AX27",
        x = "Resistant vs Susceptibe",
        y = "Counts") +
   scale_fill_manual(values = c("#87CEEB", "#FF6A6A"),
@@ -241,11 +254,24 @@ res_vs_sus = ggpubr::ggarrange(resist_09AX27, resist_93JE3, resist_P72)
 res_vs_sus
 ```
 
-Note resistant and susceptible are referring to poplar's responses. The rust id on the top shows the type of pathogen that infected the poplar. This graph shows the share of resistant and susceptible poplars when they were infected with different pathogen types. The poplars were behaving quite similarly. There were around 700 susceptible poplars. These are the poplars that I studied to see whether they were behaving differently or not. Also, whether they had the chance to fight the pathogen.
+Note resistant and susceptible are referring to poplar's responses. The rust
+id on the top shows the type of pathogen that infected the poplar. This graph
+shows the share of resistant and susceptible poplars when they were infected
+with different pathogen types. The poplars were behaving quite similarly. There
+were around 700 susceptible poplars. These are the poplars that I studied to see
+whether they were behaving differently or not. Also, whether they had the chance
+to fight the pathogen.
 
-Strictly speaking, it is rather tricky to say that these 700 poplars were susceptible. It is more effective to say that these 700 poplars were actively interacting with the pathogen, while the rest were not really interacting with the pathogen. When the poplars are interactive, it means that they can behave differently or they can fight the pathogen with different abilities. Let's stick with this definition now.
+Strictly speaking, it is rather tricky to say that these 700 poplars were
+susceptible. It is more effective to say that these 700 poplars were actively
+interacting with the pathogen, while the rest were not really interacting with
+the pathogen. When the poplars are interactive, it means that they can behave
+differently or they can fight the pathogen with different abilities. Let's stick
+with this definition now.
 
-## Counting the completely resistant individuals (meaning that they are not interacting with the pathogen)
+## Counting the completely resistant individuals (meaning that they are not
+interacting with the pathogen)
+
 ```{r incomp all strains}
 # Calculating the numbers of resistant individuals for pathogen 09AX27
 
@@ -275,19 +301,21 @@ common_final
 
 ```
 
-Turned out three poplar individuals were completely resistant across all the pathogens. It means that they were completely not interacting with the pathogens. Pathogens' activities were indifferent to them.
+Turned out three poplar individuals were completely resistant across all the
+pathogens. It means that they were completely not interacting with the pathogens.
+Pathogens' activities were indifferent to them.
 
 # The global distribution of the raw data
 In this step, we will see the global distribution of trait variation.    
-  
-We also need to:  
-1. Replace the value -5 to NA. Replace 0 to NA as well for Uredinia Size.    
-2. Total number of uredinia by adding the sporulating uredinia (NbSS) and sporulating uredinia underwater (NbSO).  
-3. Total number of black points by substracting the observed black points (NbPtN) by the black points found before first appearance of sporulating uredinia (points.noirs.avant.le.test).  
-4. Removing discriminant and control individuals.  
 
 ```{r global dist prep}
+# Some preparation
+
 test1_selec_NA <- test1_selec  # creating a new data frame to avoid confusion
+
+# Replacing -5 to NA because -5 was the code for missing data during
+# the experiment
+
 test1_selec_NA <-  test1_selec_NA %>% 
   naniar::replace_with_na(replace = list(Laten_24.02.15_gp = -5,
                                          NbSS_24.02.15_gp = -5,
@@ -296,19 +324,24 @@ test1_selec_NA <-  test1_selec_NA %>%
                                          Taill_05.08.20_gp = c(-5,0)))
 
 ## Total uredinia number = adding NbSS and NbSoS
+
 test1_selec_NA$total_NbSS <- test1_selec_NA$NbSS_24.02.15_gp + 
   test1_selec_NA$NbSO_24.02.15_gp
 
 ## Total black points = substracting NbPtN by point noires avant le test
+
 test1_selec_NA$PtN_real <- test1_selec_NA$NbPtN_24.02.15_gp - 
   test1_selec_NA$points.noirs.avant.le.test
 
 # Replacing negative values in PtN_real to 0
+
 test1_selec_NA$PtN_real <- replace(test1_selec_NA$PtN_real, 
                                    test1_selec_NA$PtN_real < 0, 0)
 
 ## Removing the discriminants and the control
+
 test1_selec_NA[ ,15] <- "NA"
+
 for (i in c(1:nrow(test1_selec_NA))){
   if(test1_selec_NA$Genotype[i] %in% discrim$Discrim)
     test1_selec_NA[i,15] <- "discrim"
@@ -320,6 +353,7 @@ test1_NA_nodisc <- test1_selec_NA[-which(test1_selec_NA[ ,15] %in%
                                            c("control", "discrim")), ]
 
 ## Histogram of each trait
+
 par(mfrow = c(2,2))
 
 test1_loop <- data.frame("LP" = test1_NA_nodisc$Laten_24.02.15_gp,
@@ -337,17 +371,19 @@ for (i in loop.vector){
 }
 ```
 
-# The distribution of trait variation per strain
-We will subset the raw data set that has been cleaned (i.e. test1_NA_nodisc) then we will proceed to the graphical inspection of each trait for each strain.
+# The distribution of trait variation per pathogen
+We will subset the raw data set that has been cleaned (i.e. test1_NA_nodisc)
+then we will proceed to the graphical inspection of each trait for each pathogen.
 
 ```{r data prep}
-## Subsetting the clean dataset with no discriminant and control individuals based on strains
+## Subsetting the clean dataset based on pathogen
+
 s09AX27_clean <- test1_NA_nodisc[which(test1_NA_nodisc$Strain == "09AX27"),]
 s93JE3_clean <- test1_NA_nodisc[which(test1_NA_nodisc$Strain == "93JE3"),]
 sP72_clean <- test1_NA_nodisc[which(test1_NA_nodisc$Strain == "P72"),]
 ```
 
-## Graphical inspection strain 09AX27
+## Graphical inspection pathogen 09AX27
 ```{r trait dist 09AX27}
 s09AX27_loop <- data.frame("LP" = s09AX27_clean$Laten_24.02.15_gp,
                            "UN" = s09AX27_clean$total_NbSS,
@@ -356,6 +392,7 @@ s09AX27_loop <- data.frame("LP" = s09AX27_clean$Laten_24.02.15_gp,
 loop.vector <- 1:4
 
 par(mfrow = c(2,2))
+
 for (i in loop.vector){
   x <- s09AX27_loop[,i]
   title <- names(s09AX27_loop[i])
@@ -365,7 +402,7 @@ for (i in loop.vector){
 }
 ```
 
-## Graphical inspection strain 93JE3
+## Graphical inspection pathogen 93JE3
 ```{r trait dist 93JE3}
 s93JE3_loop <- data.frame("LP" = s93JE3_clean$Laten_24.02.15_gp,
                           "UN" = s93JE3_clean$total_NbSS,
@@ -373,6 +410,7 @@ s93JE3_loop <- data.frame("LP" = s93JE3_clean$Laten_24.02.15_gp,
                           "Black_Points" = s93JE3_clean$PtN_real)
 
 par(mfrow = c(2,2))
+
 for (i in loop.vector){
   x <- s93JE3_loop[,i]
   title <- names(s93JE3_loop[i])
@@ -382,7 +420,7 @@ for (i in loop.vector){
 }
 ```
 
-## Graphical inspection strain P72
+## Graphical inspection pathogen P72
 ```{r trait dist P72}
 sP72_loop <- data.frame("LP" = sP72_clean$Laten_24.02.15_gp,
                         "UN" = sP72_clean$total_NbSS,
@@ -390,6 +428,7 @@ sP72_loop <- data.frame("LP" = sP72_clean$Laten_24.02.15_gp,
                         "Black_Points" = sP72_clean$PtN_real)
 
 par(mfrow = c(2,2))
+
 for (i in loop.vector){
   x <- sP72_loop[,i]
   title <- names(sP72_loop[i])
@@ -399,11 +438,12 @@ for (i in loop.vector){
 }
 ```
 
-# Saving the Rdata for prelim analysis step 2
 ```{r eval=FALSE, include=FALSE}
+# Saving the Rdata for prelim analysis step 2
+
 save(test1_selec_NA, test1_NA_nodisc,
      s09AX27_clean, s93JE3_clean, sP72_clean,
      s09AX27_loop, s93JE3_loop, sP72_loop,
      s09AX27_means, s93JE3_means, sP72_means,
-     file = "prelim_step1.RData")
+     file = "rdata_prelim_2.RData")
 ```
