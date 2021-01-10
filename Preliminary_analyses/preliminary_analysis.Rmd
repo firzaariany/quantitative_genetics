@@ -73,12 +73,12 @@ library(ggplot2)  # to make graphs
 library(ggpubr)  # to arrange ggplot graphs in columns and rows
 
 # Loading the raw data set ----
-rust_test1 <- read.delim2("B4est_test1_LectureJ13_J14_commented.txt", na = "NA")
+rust_test1 = read.delim2("B4est_test1_LectureJ13_J14_commented.txt", na = "NA")
 
 head(rust_test1)
 
 # Selection of columns ----
-test1_selec <- rust_test1[ ,-c(12, 13, 15)]  # getting only the columns that we need
+test1_selec = rust_test1[ ,-c(12, 13, 15)]  # getting only the columns that we need
 
 head(test1_selec)
 ```
@@ -98,30 +98,30 @@ The checking was carried out after excluding the control individuals.
 ```{r compatibility 09AX27}
 # Subsetting the raw dataset by pathogen
 
-test1_09AX27 <- test1_selec[which(test1_selec$Strain == "09AX27"),]
-test1_93JE3 <- test1_selec[which(test1_selec$Strain == "93JE3"),]
-test1_P72 <- test1_selec[which(test1_selec$Strain == "P72"),]
+test1_09AX27 = test1_selec[which(test1_selec$Strain == "09AX27"),]
+test1_93JE3 = test1_selec[which(test1_selec$Strain == "93JE3"),]
+test1_P72 = test1_selec[which(test1_selec$Strain == "P72"),]
 
 # From control (Genotype == Robusta) and discriminants (Genotype == discrim$Discrim)
 
-discrim <- read.table("Tab_discrim_vir.txt",
+discrim = read.table("Tab_discrim_vir.txt",
                       header = TRUE,
                       row.names = NULL)
 
 # Create a new column to differentiate normal individuals from control
 
-test1_09AX27[ ,13] <- "NA"
+test1_09AX27[ ,13] = "NA"
 
 for (i in c(1:nrow(test1_09AX27))){
   if(test1_09AX27$Genotype[i] %in% discrim$Discrim)  # if the genotype name in 09AX27 is the same as those in discrim names in discriminant file
-    test1_09AX27[i,13] <- "discrim"  # then print discrim in each row of column 13
+    test1_09AX27[i,13] = "discrim"  # then print discrim in each row of column 13
   if(test1_09AX27$Genotype[i] == "Robusta")  # if the genotype name is robusta
-    test1_09AX27[i,13] <- "control"  # then print control in each row of column 13
+    test1_09AX27[i,13] = "control"  # then print control in each row of column 13
 }
 
 # Before graphical inspection, paste the label resistant and susceptible to the relevant individuals
 
-test1_09AX27_nodisc <- test1_09AX27[-which(test1_09AX27[ ,13] %in%
+test1_09AX27_nodisc = test1_09AX27[-which(test1_09AX27[ ,13] %in%
                                              c("control", "discrim")), ]
 
 names(test1_09AX27_nodisc)[13] = "Res_vs_sus"
@@ -158,19 +158,19 @@ resist_09AX27 = ggplot(test1_09AX27_nodisc, aes(x = Res_vs_sus)) +
 
 # From control (Genotype == Robusta) and discriminants (Genotype == discrim$Discrim)
 
-test1_93JE3[ ,13] <- "NA"
+test1_93JE3[ ,13] = "NA"
 
 for (i in c(1:nrow(test1_93JE3))){
   if(test1_93JE3$Genotype[i] %in% discrim$Discrim)
-    test1_93JE3[i,13] <- "discrim"
+    test1_93JE3[i,13] = "discrim"
   if(test1_93JE3$Genotype[i] == "Robusta")
-    test1_93JE3[i,13] <- "control"
+    test1_93JE3[i,13] = "control"
 }
 
 # Before graphical inspection, paste the label resistant and susceptible to
 # the relevant individuals
 
-test1_93JE3_nodisc <- test1_93JE3[-which(test1_93JE3[ ,13] %in%
+test1_93JE3_nodisc = test1_93JE3[-which(test1_93JE3[ ,13] %in%
                                            c("control", "discrim")), ]
 
 names(test1_93JE3_nodisc)[13] = "Res_vs_sus"
@@ -207,18 +207,18 @@ resist_93JE3 = ggplot(test1_93JE3_nodisc, aes(x = Res_vs_sus)) +
 
 # From control (Genotype == Robusta) and discriminants (Genotype == discrim$Discrim)
 
-test1_P72[ ,13] <- "NA"
+test1_P72[ ,13] = "NA"
 for (i in c(1:nrow(test1_P72))){
   if(test1_P72$Genotype[i] %in% discrim$Discrim)
-    test1_P72[i,13] <- "discrim"
+    test1_P72[i,13] = "discrim"
   if(test1_P72$Genotype[i] == "Robusta")
-    test1_P72[i,13] <- "control"
+    test1_P72[i,13] = "control"
 }
 
 # Before graphical inspection, paste the label resistant and susceptible to
 # the relevant individuals
 
-test1_P72_nodisc <- test1_P72[-which(test1_P72[ ,13] %in%
+test1_P72_nodisc = test1_P72[-which(test1_P72[ ,13] %in%
                                        c("control", "discrim")), ]
 
 names(test1_P72_nodisc)[13] = "Res_vs_sus"
@@ -274,17 +274,17 @@ with this definition now.
 ```{r incomp all strains}
 # Calculating the numbers of resistant individuals for pathogen 09AX27
 
-incomp_09AX27 <- plyr::count(test1_09AX27_nodisc$Genotype[
+incomp_09AX27 = plyr::count(test1_09AX27_nodisc$Genotype[
   which(test1_09AX27_nodisc$Laten_24.02.15_gp == -5)])
 
 # Calculating the numbers of resistant individuals for pathogen 93JE3
 
-incomp_93JE3 <- plyr::count(test1_93JE3_nodisc$Genotype[
+incomp_93JE3 = plyr::count(test1_93JE3_nodisc$Genotype[
   which(test1_93JE3_nodisc$Laten_24.02.15_gp == -5)])
 
 # Calculating the numbers of resistant individuals for pathogen P72
 
-incomp_P72 <- plyr::count(test1_P72_nodisc$Genotype[
+incomp_P72 = plyr::count(test1_P72_nodisc$Genotype[
   which(test1_P72_nodisc$Laten_24.02.15_gp == -5)])
 
 # Finding the individuals that are resistant across the pathogens
@@ -310,12 +310,12 @@ In this step, I want to see the distribution of the variables.
 ```{r global dist prep}
 # Some preparation
 
-test1_selec_NA <- test1_selec  # creating a new data frame to avoid confusion
+test1_selec_NA = test1_selec  # creating a new data frame to avoid confusion
 
 # Replacing -5 to NA because -5 was the code for missing data during
 # the experiment
 
-test1_selec_NA <-  test1_selec_NA %>% 
+test1_selec_NA =  test1_selec_NA %>% 
   naniar::replace_with_na(replace = list(Laten_24.02.15_gp = -5,
                                          NbSS_24.02.15_gp = -5,
                                          NbSO_24.02.15_gp = -5,
@@ -324,46 +324,46 @@ test1_selec_NA <-  test1_selec_NA %>%
 
 ## Total uredinia number = adding NbSS and NbSoS
 
-test1_selec_NA$total_NbSS <- test1_selec_NA$NbSS_24.02.15_gp + 
+test1_selec_NA$total_NbSS = test1_selec_NA$NbSS_24.02.15_gp + 
   test1_selec_NA$NbSO_24.02.15_gp
 
 ## Total black points = substracting NbPtN by point noires avant le test
 
-test1_selec_NA$PtN_real <- test1_selec_NA$NbPtN_24.02.15_gp - 
+test1_selec_NA$PtN_real = test1_selec_NA$NbPtN_24.02.15_gp - 
   test1_selec_NA$points.noirs.avant.le.test
 
 # Replacing negative values in PtN_real to 0
 
-test1_selec_NA$PtN_real <- replace(test1_selec_NA$PtN_real, 
+test1_selec_NA$PtN_real = replace(test1_selec_NA$PtN_real, 
                                    test1_selec_NA$PtN_real < 0, 0)
 
 ## Removing the discriminants and the control
 
-test1_selec_NA[ ,15] <- "NA"
+test1_selec_NA[ ,15] = "NA"
 
 for (i in c(1:nrow(test1_selec_NA))){
   if(test1_selec_NA$Genotype[i] %in% discrim$Discrim)
-    test1_selec_NA[i,15] <- "discrim"
+    test1_selec_NA[i,15] = "discrim"
   if(test1_selec_NA$Genotype[i] == "Robusta")
-    test1_selec_NA[i,15] <- "control"
+    test1_selec_NA[i,15] = "control"
 }
 
-test1_NA_nodisc <- test1_selec_NA[-which(test1_selec_NA[ ,15] %in%
+test1_NA_nodisc = test1_selec_NA[-which(test1_selec_NA[ ,15] %in%
                                            c("control", "discrim")), ]
 
 ## Histogram of each trait
 
 par(mfrow = c(2,2))
 
-test1_loop <- data.frame("LP" = test1_NA_nodisc$Laten_24.02.15_gp,
+test1_loop = data.frame("LP" = test1_NA_nodisc$Laten_24.02.15_gp,
                          "UN" = test1_NA_nodisc$total_NbSS,
                          "US" = test1_NA_nodisc$Taill_05.08.20_gp,
                          "Black_Points" = test1_NA_nodisc$PtN_real)
-loop.vector <- 1:4
+loop.vector = 1:4
 
 for (i in loop.vector){
-  x <- test1_loop[,i]
-  title <- names(test1_loop[i])
+  x = test1_loop[,i]
+  title = names(test1_loop[i])
   hist(x,
        main = title,
        xlab = i)
@@ -382,24 +382,23 @@ distribution based on the pathogens.
 ```{r data prep}
 ## Subsetting the clean dataset based on pathogen
 
-s09AX27_clean <- test1_NA_nodisc[which(test1_NA_nodisc$Strain == "09AX27"),]
-s93JE3_clean <- test1_NA_nodisc[which(test1_NA_nodisc$Strain == "93JE3"),]
-sP72_clean <- test1_NA_nodisc[which(test1_NA_nodisc$Strain == "P72"),]
+s09AX27_clean = test1_NA_nodisc[which(test1_NA_nodisc$Strain == "09AX27"),]
+s93JE3_clean = test1_NA_nodisc[which(test1_NA_nodisc$Strain == "93JE3"),]
+sP72_clean = test1_NA_nodisc[which(test1_NA_nodisc$Strain == "P72"),]
 ```
 
 ## Graphical inspection pathogen 09AX27
 ```{r trait dist 09AX27}
-s09AX27_loop <- data.frame("LP" = s09AX27_clean$Laten_24.02.15_gp,
+s09AX27_loop = data.frame("LP" = s09AX27_clean$Laten_24.02.15_gp,
                            "UN" = s09AX27_clean$total_NbSS,
-                           "US" = s09AX27_clean$Taill_05.08.20_gp,
-                           "Black_Points" = s09AX27_clean$PtN_real)
-loop.vector <- 1:4
+                           "US" = s09AX27_clean$Taill_05.08.20_gp)
+loop.vector = 1:3
 
 par(mfrow = c(2,2))
 
 for (i in loop.vector){
-  x <- s09AX27_loop[,i]
-  title <- names(s09AX27_loop[i])
+  x = s09AX27_loop[,i]
+  title = names(s09AX27_loop[i])
   hist(x,
        main = paste("09AX27", title),
        xlab = "Scores")
@@ -408,16 +407,15 @@ for (i in loop.vector){
 
 ## Graphical inspection pathogen 93JE3
 ```{r trait dist 93JE3}
-s93JE3_loop <- data.frame("LP" = s93JE3_clean$Laten_24.02.15_gp,
+s93JE3_loop = data.frame("LP" = s93JE3_clean$Laten_24.02.15_gp,
                           "UN" = s93JE3_clean$total_NbSS,
-                          "US" = s93JE3_clean$Taill_05.08.20_gp,
-                          "Black_Points" = s93JE3_clean$PtN_real)
+                          "US" = s93JE3_clean$Taill_05.08.20_gp)
 
 par(mfrow = c(2,2))
 
 for (i in loop.vector){
-  x <- s93JE3_loop[,i]
-  title <- names(s93JE3_loop[i])
+  x = s93JE3_loop[,i]
+  title = names(s93JE3_loop[i])
   hist(x,
        main = paste("93JE3", title),
        xlab = "Scores")
@@ -426,16 +424,15 @@ for (i in loop.vector){
 
 ## Graphical inspection pathogen P72
 ```{r trait dist P72}
-sP72_loop <- data.frame("LP" = sP72_clean$Laten_24.02.15_gp,
+sP72_loop = data.frame("LP" = sP72_clean$Laten_24.02.15_gp,
                         "UN" = sP72_clean$total_NbSS,
-                        "US" = sP72_clean$Taill_05.08.20_gp,
-                        "Black_Points" = sP72_clean$PtN_real)
+                        "US" = sP72_clean$Taill_05.08.20_gp)
 
 par(mfrow = c(2,2))
 
 for (i in loop.vector){
-  x <- sP72_loop[,i]
-  title <- names(sP72_loop[i])
+  x = sP72_loop[,i]
+  title = names(sP72_loop[i])
   hist(x,
        main = paste("P72", title),
        xlab = "Scores")
