@@ -16,9 +16,8 @@ infected by 3 pathogens. I collected 3 variables: latent period (LP), uredinia
 number (UN), and uredinia size (US) to observe poplar's resistance.
 
 # Objectives  
-1. Observe the mean for each variable across blocks (individual means) and
-individuals (block means) 
-2. Graphical inspection of individual means across blocks
+1. Graphical illustration of experimental design.  
+2. Graphical illustration of individuals' response to the pathogen across blocks.  
 
 # Input
 ```{r data input}
@@ -28,6 +27,129 @@ load(file = "rdata_prelim_1.RData")  # RData prepared from previous prelim analy
 # Libraries
 ```{r libraries}
 library(ggplot2)  # To map the plot
+library(ggpubr)  # To arrange multiple plots
+```
+
+# Graphical illustration of the experimental design
+As I mentioned above, the data was collected from an experimental design of 154
+individuals that were spread across 5 blocks. In each block the individuals were
+infected with 3 pathogens.
+
+In this section I will show you the position of the individuals in the plots of
+the experimental design (position is given by X and Y coordinates). Most
+importantly, the plots will give you the idea the variability in individuals' 
+responses in terms of latent period (LP), uredinia number (UN), and uredinia
+size (US) across the pathogens.
+
+## For variable latent period (LP)
+```{r plot LP}
+fun.qplot = function(X_coord, Y_coord, var){
+  qplot(X_coord, Y_coord, fill = var, geom = "tile",
+        xlab = "X", ylab = "Y") +
+    scale_fill_gradient(low = "green", high = "red")
+}
+
+# Pathogen = 09AX27
+LP_09 = fun.qplot(X_coord = s09AX27_clean$X, 
+                  Y_coord = s09AX27_clean$Y,
+                  var = s09AX27_clean$Laten_24.02.15_gp)
+
+LP_09_title = LP_09 + labs(title = "Latent period",
+                           subtitle = "Pathogen = 09AX27")
+
+# Pathogen = 93JE3
+LP_93 = fun.qplot(X_coord = s93JE3_clean$X,
+                  Y_coord = s93JE3_clean$Y,
+                  var = s93JE3_clean$Laten_24.02.15_gp)
+
+LP_93_title = LP_93 + labs(title = element_blank(),
+                           subtitle = "Pathogen = 93JE3")
+
+# Pathogen = P72
+LP_72 = fun.qplot(X_coord = sP72_clean$X,
+                  Y_coord = sP72_clean$Y,
+                  var = sP72_clean$Laten_24.02.15_gp)
+
+LP_72_title = LP_72 + labs(title = element_blank(),
+                           subtitle = "Pathogen = P72")
+
+# Combining all the plots
+LP_variation = ggpubr::ggarrange(LP_09_title, LP_93_title, LP_72_title)
+
+LP_variation
+```
+
+From these plots, I can see that poplar individuals tended to start showing
+infection symptoms as early as day 8 (incubation period = 14 days). This is true
+for the poplars infected by pathogen 93JE3 and P72. The poplars that were
+infected by 09AX27 showed more variable response.
+
+## For variable uredinia number
+```{r plot UN}
+# Pathogen 09AX27
+UN_09 = fun.qplot(X_coord = s09AX27_clean$X, 
+                  Y_coord = s09AX27_clean$Y,
+                  var = s09AX27_clean$total_NbSS)
+
+UN_09_title = UN_09 + labs(title = "Uredinia Number",
+                           subtitle = "Pathogen = 09AX27")
+
+# Pathogen 93JE3
+UN_93 = fun.qplot(X_coord = s93JE3_clean$X,
+                  Y_coord = s93JE3_clean$Y,
+                  var = s93JE3_clean$total_NbSS)
+
+UN_93_title = UN_93 + labs(title = element_blank(),
+                           subtitle = "Pathogen = 93JE3")
+
+# Pathogen = P72
+UN_72 = fun.qplot(X_coord = sP72_clean$X,
+                  Y_coord = sP72_clean$Y,
+                  var = sP72_clean$total_NbSS)
+
+UN_72_title = UN_72 + labs(title = element_blank(),
+                           subtitle = "Pathogen = P72")
+
+UN_variation = ggpubr::ggarrange(UN_09_title, UN_93_title, UN_72_title)
+
+UN_variation
+```
+It is not very easy to compare UN variation across pathogens. There is a high 
+range for UN for each pathogen. However, I can see that individuals infected 
+by pathogen 09AX27 showed smaller amount of uredinia than the other individuals
+infected by 93JE3 and P72. Individuals infected by P72 showed the largest amount
+of uredinia, but most of them were showing uredinia number far below the largest
+amount. 
+
+## For variable uredinia size
+```{r plot US}
+# Pathogen 09AX27
+US_09 = fun.qplot(X_coord = s09AX27_clean$X, 
+                  Y_coord = s09AX27_clean$Y,
+                  var = s09AX27_clean$Taill_05.08.20_gp)
+
+US_09_title = US_09 + labs(title = "Uredinia Size",
+                           subtitle = "Pathogen = 09AX27")
+
+# Pathogen 93JE3
+US_93 = fun.qplot(X_coord = s93JE3_clean$X,
+                  Y_coord = s93JE3_clean$Y,
+                  var = s93JE3_clean$Taill_05.08.20_gp)
+
+US_93_title = US_93 + labs(title = element_blank(),
+                           subtitle = "Pathogen = 93JE3")
+
+# Pathogen P72
+US_72 = fun.qplot(X_coord = sP72_clean$X,
+                  Y_coord = sP72_clean$Y,
+                  var = sP72_clean$Taill_05.08.20_gp)
+
+US_72_title = US_72 + labs(title = element_blank(),
+                           subtitle = "Pathogen = P72")
+
+US_variation = ggpubr::ggarrange(US_09_title, US_93_title, US_72_title)
+
+US_variation
 ```
 
 # Comparing the individual and block mean in graphs
@@ -39,8 +161,8 @@ str(s09AX27_clean)
 
 # Individuals and blocks have to be converted from character to factor.
 
-s09AX27_clean$Block <- as.factor(s09AX27_clean$Block)
-s09AX27_clean$Genotype <- as.factor(s09AX27_clean$Genotype)
+s09AX27_clean$Block = as.factor(s09AX27_clean$Block)
+s09AX27_clean$Genotype = as.factor(s09AX27_clean$Genotype)
 
 par(mfrow = c(2,2))
 
@@ -52,8 +174,8 @@ plot.design(s09AX27_clean, y = s09AX27_clean$Taill_05.08.20_gp, ylab = "Mean US"
 
 ## Strain 93JE3
 ```{r plot.design 93JE3, fig.height=8, fig.width=10, warning=FALSE}
-s93JE3_clean$Block <- as.factor(s93JE3_clean$Block)
-s93JE3_clean$Genotype <- as.factor(s93JE3_clean$Genotype)
+s93JE3_clean$Block = as.factor(s93JE3_clean$Block)
+s93JE3_clean$Genotype = as.factor(s93JE3_clean$Genotype)
 
 par(mfrow = c(2,2))
 plot.design(s93JE3_clean, y = s93JE3_clean$Laten_24.02.15_gp, ylab = "Mean LP")
@@ -64,8 +186,8 @@ plot.design(s93JE3_clean, y = s93JE3_clean$PtN_real, ylab = "Mean Black Points")
 
 ## Strain P72
 ```{r plot.design P72, fig.height=8, fig.width=10, warning=FALSE}
-sP72_clean$Block <- as.factor(sP72_clean$Block)
-sP72_clean$Genotype <- as.factor(sP72_clean$Genotype)
+sP72_clean$Block = as.factor(sP72_clean$Block)
+sP72_clean$Genotype = as.factor(sP72_clean$Genotype)
 
 par(mfrow = c(2,2))
 plot.design(sP72_clean, y = sP72_clean$Laten_24.02.15_gp, ylab = "Mean LP")
@@ -80,60 +202,60 @@ The genotypic mean is observed per trait and per strain. For example there will 
 ## Genotypic mean and sd for latent period (LP) strain 09AX27, 93JE3 and P72
 ```{r LP mean sd}
 # Function for genotypic mean
-mean.all <- function(x, Genotype){
+mean.all = function(x, Genotype){
   data.frame(aggregate(x, by = Genotype, mean, na.rm = TRUE))
 }
 
 # Function for genotypic sd
-sd.all <- function(x, Genotype){
+sd.all = function(x, Genotype){
   data.frame(aggregate(x, by = Genotype, sd, na.rm = TRUE))
 }
 
 # Creating list for loop
-strain_list <- list(s09AX27_clean, s93JE3_clean, sP72_clean)
+strain_list = list(s09AX27_clean, s93JE3_clean, sP72_clean)
 
-mean_laten <- list()
-sd_laten <- list()
+mean_laten = list()
+sd_laten = list()
 for (i in 1:length(strain_list)) {
-  mean_laten[[i]] <- mean.all(strain_list[[i]]$Laten_24.02.15_gp,
+  mean_laten[[i]] = mean.all(strain_list[[i]]$Laten_24.02.15_gp,
                               list(strain_list[[i]]$Genotype))
-  dat_mean_laten <- as.data.frame(mean_laten)
-  sd_laten[[i]] <- sd.all(strain_list[[i]]$Laten_24.02.15_gp,
+  dat_mean_laten = as.data.frame(mean_laten)
+  sd_laten[[i]] = sd.all(strain_list[[i]]$Laten_24.02.15_gp,
                           list(strain_list[[i]]$Genotype))
-  dat_sd_laten <- as.data.frame(sd_laten)
+  dat_sd_laten = as.data.frame(sd_laten)
 }
 
-names(dat_mean_laten) <- c("s09AX27", "Mean_09AX27",
+names(dat_mean_laten) = c("s09AX27", "Mean_09AX27",
                            "s93JE3", "Mean_93JE3",
                            "sP72", "Mean_P72")
-dat_mean_laten[dat_mean_laten == "NaN"] <- NA
+dat_mean_laten[dat_mean_laten == "NaN"] = NA
 
-names(dat_sd_laten) <- c("s09AX27", "Sd_09AX27",
+names(dat_sd_laten) = c("s09AX27", "Sd_09AX27",
                          "s93JE3", "Sd_93JE3",
                          "sP72", "Sd_P72")
 
 # Extract the genotypes for each strain
-s09AX27_means <- data.frame(
+s09AX27_means = data.frame(
   Genotype = as.character(levels(as.factor(s09AX27_clean$Genotype)))
 )
 
-s93JE3_means <- data.frame(
+s93JE3_means = data.frame(
   Genotype = as.character(levels(as.factor(s93JE3_clean$Genotype)))
 )
 
-sP72_means <- data.frame(
+sP72_means = data.frame(
   Genotype = as.character(levels(as.factor(sP72_clean$Genotype)))
 )
 
 # Join them (per strain) with sd and mean
-s09AX27_means$LP_mean <- dat_mean_laten$Mean_09AX27
-s09AX27_means$LP_sd <- dat_sd_laten$Sd_09AX27
+s09AX27_means$LP_mean = dat_mean_laten$Mean_09AX27
+s09AX27_means$LP_sd = dat_sd_laten$Sd_09AX27
 
-s93JE3_means$LP_mean <- dat_mean_laten$Mean_93JE3
-s93JE3_means$LP_sd <- dat_sd_laten$Sd_93JE3
+s93JE3_means$LP_mean = dat_mean_laten$Mean_93JE3
+s93JE3_means$LP_sd = dat_sd_laten$Sd_93JE3
 
-sP72_means$LP_mean <- dat_mean_laten$Mean_P72
-sP72_means$LP_sd <- dat_sd_laten$Sd_P72
+sP72_means$LP_mean = dat_mean_laten$Mean_P72
+sP72_means$LP_sd = dat_sd_laten$Sd_P72
 ```
 
 ### Graphical inspection for strain 09AX27
@@ -192,33 +314,33 @@ ggplot(sP72_means) +
 # List for loop = strain_list
 # Function: mean.all and sd.all
 
-mean_UN <- list()
-sd_UN <- list()
+mean_UN = list()
+sd_UN = list()
 for (i in 1:length(strain_list)) {
-  mean_UN[[i]] <- mean.all(strain_list[[i]]$total_NbSS,
+  mean_UN[[i]] = mean.all(strain_list[[i]]$total_NbSS,
                           list(strain_list[[i]]$Genotype))
-  dat_mean_UN <- as.data.frame(mean_UN)
-  sd_UN[[i]] <- sd.all(strain_list[[i]]$total_NbSS,
+  dat_mean_UN = as.data.frame(mean_UN)
+  sd_UN[[i]] = sd.all(strain_list[[i]]$total_NbSS,
                       list(strain_list[[i]]$Genotype))
-  dat_sd_UN <- as.data.frame(sd_UN)
+  dat_sd_UN = as.data.frame(sd_UN)
 }
 
-names(dat_mean_UN) <- c("s09AX27", "UN_Mean_09AX27",
+names(dat_mean_UN) = c("s09AX27", "UN_Mean_09AX27",
                         "s93JE3", "UN_Mean_93JE3",
                         "sP72", "UN_Mean_P72")
-names(dat_sd_UN) <- c("s09AX27", "Sd_09AX27",
+names(dat_sd_UN) = c("s09AX27", "Sd_09AX27",
                       "s93JE3", "Sd_93JE3",
                       "sP72", "Sd_P72")
 
 # Join them (per strain) with sd and mean
-s09AX27_means$UN_mean <- dat_mean_UN$UN_Mean_09AX27
-s09AX27_means$UN_sd <- dat_sd_UN$Sd_09AX27
+s09AX27_means$UN_mean = dat_mean_UN$UN_Mean_09AX27
+s09AX27_means$UN_sd = dat_sd_UN$Sd_09AX27
 
-s93JE3_means$UN_mean <- dat_mean_UN$UN_Mean_93JE3
-s93JE3_means$UN_sd <- dat_sd_UN$Sd_93JE3
+s93JE3_means$UN_mean = dat_mean_UN$UN_Mean_93JE3
+s93JE3_means$UN_sd = dat_sd_UN$Sd_93JE3
 
-sP72_means$UN_mean <- dat_mean_UN$UN_Mean_P72
-sP72_means$UN_sd <- dat_sd_UN$Sd_P72
+sP72_means$UN_mean = dat_mean_UN$UN_Mean_P72
+sP72_means$UN_sd = dat_sd_UN$Sd_P72
 ```
 
 ### Graphical inspection for strain 09AX27
@@ -277,33 +399,33 @@ ggplot(sP72_means) +
 # List for loop = strain_list
 # Function: mean.all and sd.all
 
-mean_US <- list()
-sd_US <- list()
+mean_US = list()
+sd_US = list()
 for (i in 1:length(strain_list)) {
-  mean_US[[i]] <- mean.all(strain_list[[i]]$Taill_05.08.20_gp,
+  mean_US[[i]] = mean.all(strain_list[[i]]$Taill_05.08.20_gp,
                            list(strain_list[[i]]$Genotype))
-  dat_mean_US <- as.data.frame(mean_US)
-  sd_US[[i]] <- sd.all(strain_list[[i]]$Taill_05.08.20_gp,
+  dat_mean_US = as.data.frame(mean_US)
+  sd_US[[i]] = sd.all(strain_list[[i]]$Taill_05.08.20_gp,
                        list(strain_list[[i]]$Genotype))
-  dat_sd_US <- as.data.frame(sd_US)
+  dat_sd_US = as.data.frame(sd_US)
 }
 
-names(dat_mean_US) <- c("s09AX27", "US_Mean_09AX27",
+names(dat_mean_US) = c("s09AX27", "US_Mean_09AX27",
                         "s93JE3", "US_Mean_93JE3",
                         "sP72", "US_Mean_P72")
-names(dat_sd_US) <- c("s09AX27", "Sd_09AX27",
+names(dat_sd_US) = c("s09AX27", "Sd_09AX27",
                       "s93JE3", "Sd_93JE3",
                       "sP72", "Sd_P72")
 
 # Join them (per strain) with sd and mean
-s09AX27_means$US_mean <- dat_mean_US$US_Mean_09AX27
-s09AX27_means$US_sd <- dat_sd_US$Sd_09AX27
+s09AX27_means$US_mean = dat_mean_US$US_Mean_09AX27
+s09AX27_means$US_sd = dat_sd_US$Sd_09AX27
 
-s93JE3_means$US_mean <- dat_mean_US$US_Mean_93JE3
-s93JE3_means$US_sd <- dat_sd_US$Sd_93JE3
+s93JE3_means$US_mean = dat_mean_US$US_Mean_93JE3
+s93JE3_means$US_sd = dat_sd_US$Sd_93JE3
 
-sP72_means$US_mean <- dat_mean_US$US_Mean_P72
-sP72_means$US_sd <- dat_sd_US$Sd_P72
+sP72_means$US_mean = dat_mean_US$US_Mean_P72
+sP72_means$US_sd = dat_sd_US$Sd_P72
 ```
 
 ### Graphical inspection for strain 09AX27
@@ -359,35 +481,35 @@ ggplot(sP72_means) +
 # List for loop = strain_list
 # Function: mean.all and sd.all
 
-mean_BP <- list()
-sd_BP <- list()
+mean_BP = list()
+sd_BP = list()
 for (i in 1:length(strain_list)) {
-  mean_BP[[i]] <- mean.all(strain_list[[i]]$PtN_real,
+  mean_BP[[i]] = mean.all(strain_list[[i]]$PtN_real,
                            list(strain_list[[i]]$Genotype))
-  dat_mean_BP <- as.data.frame(mean_BP)
-  sd_BP[[i]] <- sd.all(strain_list[[i]]$PtN_real,
+  dat_mean_BP = as.data.frame(mean_BP)
+  sd_BP[[i]] = sd.all(strain_list[[i]]$PtN_real,
                        list(strain_list[[i]]$Genotype))
-  dat_sd_BP <- as.data.frame(sd_BP)
+  dat_sd_BP = as.data.frame(sd_BP)
 }
 
-names(dat_mean_BP) <- c("s09AX27", "BP_Mean_09AX27",
+names(dat_mean_BP) = c("s09AX27", "BP_Mean_09AX27",
                         "s93JE3", "BP_Mean_93JE3",
                         "sP72", "BP_Mean_P72")
-dat_mean_BP[dat_mean_BP == "NaN"] <- NA
+dat_mean_BP[dat_mean_BP == "NaN"] = NA
 
-names(dat_sd_BP) <- c("s09AX27", "Sd_09AX27",
+names(dat_sd_BP) = c("s09AX27", "Sd_09AX27",
                       "s93JE3", "Sd_93JE3",
                       "sP72", "Sd_P72")
 
 # Join them (per strain) with sd and mean
-s09AX27_means$BP_mean <- dat_mean_BP$BP_Mean_09AX27
-s09AX27_means$BP_sd <- dat_sd_BP$Sd_09AX27
+s09AX27_means$BP_mean = dat_mean_BP$BP_Mean_09AX27
+s09AX27_means$BP_sd = dat_sd_BP$Sd_09AX27
 
-s93JE3_means$BP_mean <- dat_mean_BP$BP_Mean_93JE3
-s93JE3_means$BP_sd <- dat_sd_BP$Sd_93JE3
+s93JE3_means$BP_mean = dat_mean_BP$BP_Mean_93JE3
+s93JE3_means$BP_sd = dat_sd_BP$Sd_93JE3
 
-sP72_means$BP_mean <- dat_mean_BP$BP_Mean_P72
-sP72_means$BP_sd <- dat_sd_BP$Sd_P72
+sP72_means$BP_mean = dat_mean_BP$BP_Mean_P72
+sP72_means$BP_sd = dat_sd_BP$Sd_P72
 ```
 
 ### Graphical inspection for strain 09AX27
