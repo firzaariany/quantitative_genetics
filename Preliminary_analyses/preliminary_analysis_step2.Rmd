@@ -17,7 +17,7 @@ number (UN), and uredinia size (US) to observe poplar's resistance.
 
 # Objectives  
 1. Graphical illustration of experimental design.  
-2. Graphical illustration of individuals' response to the pathogen across blocks.  
+2. The overall response of individuals toward the infection.  
 
 # Input
 ```{r data input}
@@ -28,6 +28,7 @@ load(file = "rdata_prelim_1.RData")  # RData prepared from previous prelim analy
 ```{r libraries}
 library(ggplot2)  # To map the plot
 library(ggpubr)  # To arrange multiple plots
+library(hrbrthemes)  # To load theme_ipsum function in ggplot
 ```
 
 # Graphical illustration of the experimental design
@@ -152,61 +153,20 @@ US_variation = ggpubr::ggarrange(US_09_title, US_93_title, US_72_title)
 US_variation
 ```
 
-# Comparing the individual and block mean in graphs
-Visual comparison to see whether individual mean and block mean are different or not.
+# The overall response of individuals toward the infection.
+As I mentioned above, I had an experimental design of poplar individuals spread 
+across 5 blocks. So, now I want to see the overall response of the individuals
+regardless of the blocks. To do this, I will need to average individual response
+by dividing it with 5, which is the number of blocks we have.
 
-## Strain 09AX27
-```{r plot.design 09AX27, fig.height=8, fig.width=10, warning=FALSE}
-str(s09AX27_clean)
-
-# Individuals and blocks have to be converted from character to factor.
-
-s09AX27_clean$Block = as.factor(s09AX27_clean$Block)
-s09AX27_clean$Genotype = as.factor(s09AX27_clean$Genotype)
-
-par(mfrow = c(2,2))
-
-
-plot.design(s09AX27_clean, y = s09AX27_clean$Laten_24.02.15_gp, ylab = "Mean LP")
-plot.design(s09AX27_clean, y = s09AX27_clean$total_NbSS, ylab = "Mean UN")
-plot.design(s09AX27_clean, y = s09AX27_clean$Taill_05.08.20_gp, ylab = "Mean US")
-```
-
-## Strain 93JE3
-```{r plot.design 93JE3, fig.height=8, fig.width=10, warning=FALSE}
-s93JE3_clean$Block = as.factor(s93JE3_clean$Block)
-s93JE3_clean$Genotype = as.factor(s93JE3_clean$Genotype)
-
-par(mfrow = c(2,2))
-plot.design(s93JE3_clean, y = s93JE3_clean$Laten_24.02.15_gp, ylab = "Mean LP")
-plot.design(s93JE3_clean, y = s93JE3_clean$total_NbSS, ylab = "Mean UN")
-plot.design(s93JE3_clean, y = s93JE3_clean$Taill_05.08.20_gp, ylab = "Mean US")
-plot.design(s93JE3_clean, y = s93JE3_clean$PtN_real, ylab = "Mean Black Points")
-```
-
-## Strain P72
-```{r plot.design P72, fig.height=8, fig.width=10, warning=FALSE}
-sP72_clean$Block = as.factor(sP72_clean$Block)
-sP72_clean$Genotype = as.factor(sP72_clean$Genotype)
-
-par(mfrow = c(2,2))
-plot.design(sP72_clean, y = sP72_clean$Laten_24.02.15_gp, ylab = "Mean LP")
-plot.design(sP72_clean, y = sP72_clean$total_NbSS, ylab = "Mean UN")
-plot.design(sP72_clean, y = sP72_clean$Taill_05.08.20_gp, ylab = "Mean US")
-plot.design(sP72_clean, y = sP72_clean$PtN_real, ylab = "Mean Black Points")
-```
-
-# Observation of genotypic mean and standard deviation across blocks and its graphical inspection
-The genotypic mean is observed per trait and per strain. For example there will be genotypic mean for LP for each strain.
-
-## Genotypic mean and sd for latent period (LP) strain 09AX27, 93JE3 and P72
+## For variable latent period
 ```{r LP mean sd}
-# Function for genotypic mean
+# Creating the function for mean
 mean.all = function(x, Genotype){
   data.frame(aggregate(x, by = Genotype, mean, na.rm = TRUE))
 }
 
-# Function for genotypic sd
+# Creating the function for standard deviation
 sd.all = function(x, Genotype){
   data.frame(aggregate(x, by = Genotype, sd, na.rm = TRUE))
 }
@@ -215,39 +175,46 @@ sd.all = function(x, Genotype){
 strain_list = list(s09AX27_clean, s93JE3_clean, sP72_clean)
 
 mean_laten = list()
+
 sd_laten = list()
+
 for (i in 1:length(strain_list)) {
+  
   mean_laten[[i]] = mean.all(strain_list[[i]]$Laten_24.02.15_gp,
                               list(strain_list[[i]]$Genotype))
+  
   dat_mean_laten = as.data.frame(mean_laten)
+  
   sd_laten[[i]] = sd.all(strain_list[[i]]$Laten_24.02.15_gp,
                           list(strain_list[[i]]$Genotype))
+  
   dat_sd_laten = as.data.frame(sd_laten)
 }
 
 names(dat_mean_laten) = c("s09AX27", "Mean_09AX27",
                            "s93JE3", "Mean_93JE3",
                            "sP72", "Mean_P72")
+
 dat_mean_laten[dat_mean_laten == "NaN"] = NA
 
 names(dat_sd_laten) = c("s09AX27", "Sd_09AX27",
                          "s93JE3", "Sd_93JE3",
                          "sP72", "Sd_P72")
 
-# Extract the genotypes for each strain
+# Extract the individuals for each pathogen
 s09AX27_means = data.frame(
   Genotype = as.character(levels(as.factor(s09AX27_clean$Genotype)))
-)
+  )
 
 s93JE3_means = data.frame(
   Genotype = as.character(levels(as.factor(s93JE3_clean$Genotype)))
-)
+  )
 
 sP72_means = data.frame(
   Genotype = as.character(levels(as.factor(sP72_clean$Genotype)))
-)
+  )
 
-# Join them (per strain) with sd and mean
+# Join them (per pathogen) with sd and mean
 s09AX27_means$LP_mean = dat_mean_laten$Mean_09AX27
 s09AX27_means$LP_sd = dat_sd_laten$Sd_09AX27
 
@@ -258,76 +225,92 @@ sP72_means$LP_mean = dat_mean_laten$Mean_P72
 sP72_means$LP_sd = dat_sd_laten$Sd_P72
 ```
 
-### Graphical inspection for strain 09AX27
-```{r LP mean ggplot 09AX27, warning=FALSE}
-ggplot(s09AX27_means) +
+```{r LP mean ggplot, message=FALSE, warning=FALSE}
+# Graphical inspection for pathogen 09AX27
+LP_mean_09 = 
+  ggplot(data = s09AX27_means) +
   geom_bar(aes(x = Genotype, y = LP_mean), 
            stat = "identity", 
-           fill = "cyan3",
-           na.rm = TRUE) +
+           fill = "#69b3a2",
+           color = "#e9ecef",
+           alpha = 0.9) +
   geom_errorbar(aes(x = Genotype, ymin = LP_mean - LP_sd,
-                    ymax = LP_mean + LP_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (09AX27)", y = "Mean Latent Periods (days)\n", 
-       title = "Genotypic means across blocks") +
+                    ymax = LP_mean + LP_sd), color = "#6E7B8B", size = 0.5) +
+  labs(x = "Individuals", y = "Mean Latent Periods (days)", 
+       title = "Overall Individual Response", subtitle = "Pathogen = 09AX27") +
   ylim(0,15) +
-  theme_bw() +
+  hrbrthemes::theme_ipsum() +
   theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
-```
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
 
-### Graphical inspection for strain 93JE3
-```{r LP mean ggplot 93JE3}
-ggplot(s93JE3_means) +
+# Graphical inspection for pathogen 93JE3
+LP_mean_93 = 
+  ggplot(data = s93JE3_means) +
   geom_bar(aes(x = Genotype, y = LP_mean), 
            stat = "identity", 
-           fill = "cyan3",
-           na.rm = TRUE) +
+           fill = "#69b3a2",
+           color = "#e9ecef",
+           alpha = 0.9) +
   geom_errorbar(aes(x = Genotype, ymin = LP_mean - LP_sd,
-                    ymax = LP_mean + LP_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (93JE3)", y = "Mean Latent Periods (days)\n", 
-       title = "Genotypic means across blocks") +
+                    ymax = LP_mean + LP_sd), color = "#6E7B8B", size = 0.5) +
+  labs(x = "Individuals", y = "Mean Latent Periods (days)", 
+       title = element_blank(), subtitle = "Pathogen = 93JE3") +
   ylim(0,15) +
-  theme_bw() +
+  hrbrthemes::theme_ipsum() +
   theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
-```
+        plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
 
-### Graphical inspection for strain P72
-```{r LP mean ggplot P72}
-ggplot(sP72_means) +
+# Graphical inspection for pathogen P72
+LP_mean_72 = 
+ggplot(data = sP72_means) +
   geom_bar(aes(x = Genotype, y = LP_mean), 
            stat = "identity", 
-           fill = "cyan3",
-           na.rm = TRUE) +
+           fill = "#69b3a2",
+           color = "#e9ecef",
+           alpha = 0.9) +
   geom_errorbar(aes(x = Genotype, ymin = LP_mean - LP_sd,
-                    ymax = LP_mean + LP_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (P72)", y = "Mean Latent Periods (days)\n", 
-       title = "Genotypic means across blocks") +
+                    ymax = LP_mean + LP_sd), color = "#6E7B8B", size = 0.5) +
+  labs(x = "Individuals", y = "Mean Latent Periods (days)", 
+       subtitle = "Pathogen = P72") +
   ylim(0,15) +
-  theme_bw() +
+  hrbrthemes::theme_ipsum() +
   theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
+        plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+LP_mean_graph = ggpubr::ggarrange(LP_mean_09, LP_mean_93, LP_mean_72)
+
+LP_mean_graph
 ```
 
-## Genotypic mean and sd for uredinia number (UN) strain 09AX27, 93JE3 and P72
+## For variable uredinia number
 ```{r UN mean sd}
 # List for loop = strain_list
 # Function: mean.all and sd.all
 
 mean_UN = list()
+
 sd_UN = list()
+
 for (i in 1:length(strain_list)) {
   mean_UN[[i]] = mean.all(strain_list[[i]]$total_NbSS,
                           list(strain_list[[i]]$Genotype))
+  
   dat_mean_UN = as.data.frame(mean_UN)
+  
   sd_UN[[i]] = sd.all(strain_list[[i]]$total_NbSS,
                       list(strain_list[[i]]$Genotype))
+  
   dat_sd_UN = as.data.frame(sd_UN)
 }
 
 names(dat_mean_UN) = c("s09AX27", "UN_Mean_09AX27",
                         "s93JE3", "UN_Mean_93JE3",
                         "sP72", "UN_Mean_P72")
+
 names(dat_sd_UN) = c("s09AX27", "Sd_09AX27",
                       "s93JE3", "Sd_93JE3",
                       "sP72", "Sd_P72")
@@ -343,57 +326,70 @@ sP72_means$UN_mean = dat_mean_UN$UN_Mean_P72
 sP72_means$UN_sd = dat_sd_UN$Sd_P72
 ```
 
-### Graphical inspection for strain 09AX27
-```{r UN mean ggplot 09AX27}
-ggplot(s09AX27_means) +
+```{r UN mean ggplot 09AX27, message=FALSE, warning=FALSE}
+# Graphical inspection (UN) for pathogen 09AX27
+UN_mean_09 = 
+  ggplot(data = s09AX27_means) +
   geom_bar(aes(x = Genotype, y = UN_mean), 
            stat = "identity", 
-           fill = "firebrick3",
-           na.rm = TRUE) +
+           fill = "#AB82FF",
+           color = "#e9ecef",
+           alpha = 0.9) +
   geom_errorbar(aes(x = Genotype, ymin = UN_mean - UN_sd,
-                    ymax = UN_mean + UN_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (09AX27)", y = "Mean Uredinia Number\n", 
-       title = "UN genotypic across blocks") +
+                    ymax = UN_mean + UN_sd), color = "#6E7B8B", size = 0.5) +
+  labs(x = "Individuals", y = "Mean Uredinia Number (counts)", 
+       title = "Overall Individual Response", subtitle = "Pathogen = 09AX27") +
   ylim(0,85) +
-  theme_bw() +
+  hrbrthemes::theme_ipsum() +
   theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
-```
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
 
-### Graphical inspection for strain 93JE3
-```{r UN mean ggplot 93JE3}
-ggplot(s93JE3_means) +
+# Graphical inspection (UN) for pathogen 93JE3
+UN_mean_93 = 
+  ggplot(data = s93JE3_means) +
   geom_bar(aes(x = Genotype, y = UN_mean), 
            stat = "identity", 
-           fill = "firebrick3",
-           na.rm = TRUE) +
+           fill = "#AB82FF",
+           color = "#e9ecef",
+           alpha = 0.9) +
   geom_errorbar(aes(x = Genotype, ymin = UN_mean - UN_sd,
-                    ymax = UN_mean + UN_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (93JE3)", y = "Mean Uredinia Number\n", 
-       title = "UN genotypic means across blocks") +
+                    ymax = UN_mean + UN_sd), color = "#6E7B8B", size = 0.5) +
+  labs(x = "Individuals", y = "Mean Uredinia Number (counts)", 
+       title = element_blank(), subtitle = "Pathogen = 93JE3") +
   ylim(0,85) +
-  theme_bw() +
+  hrbrthemes::theme_ipsum() +
   theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
-```
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
 
-### Graphical inspection for strain P72
-```{r UN mean ggplot P72}
-ggplot(sP72_means) +
+# Graphical inspection (UN) for pathogen P72
+UN_mean_72 = 
+  ggplot(data = sP72_means) +
   geom_bar(aes(x = Genotype, y = UN_mean), 
            stat = "identity", 
-           fill = "firebrick3",
-           na.rm = TRUE) +
+           fill = "#AB82FF",
+           color = "#e9ecef",
+           alpha = 0.9) +
   geom_errorbar(aes(x = Genotype, ymin = UN_mean - UN_sd,
-                    ymax = UN_mean + UN_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (P72)", y = "Mean Uredinia number\n", 
-       title = "UN genotypic means across blocks") +
+                    ymax = UN_mean + UN_sd), color = "#6E7B8B", size = 0.5) +
+  labs(x = "Individuals", y = "Mean Uredinia Number (counts)", 
+       title = element_blank(), subtitle = "Pathogen = P72") +
   ylim(0,85) +
-  theme_bw() +
+  hrbrthemes::theme_ipsum() +
   theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+UN_mean_graph = ggpubr::ggarrange(UN_mean_09, UN_mean_93, UN_mean_72)
+
+UN_mean_graph
 ```
 
+## For variable uredinia size
 ## Genotypic mean and sd for uredinia size (US) strain 09AX27, 93JE3 and P72
 ```{r US mean sd}
 # List for loop = strain_list
@@ -476,91 +472,48 @@ ggplot(sP72_means) +
         panel.grid = element_blank())
 ```
 
-## Genotypic mean and sd for black points (BP) strain 09AX27, 93JE3 and P72
-```{r BP mean sd}
-# List for loop = strain_list
-# Function: mean.all and sd.all
+# Comparing the individual and block mean in graphs
+Visual comparison to see whether individual mean and block mean are different or not.
 
-mean_BP = list()
-sd_BP = list()
-for (i in 1:length(strain_list)) {
-  mean_BP[[i]] = mean.all(strain_list[[i]]$PtN_real,
-                           list(strain_list[[i]]$Genotype))
-  dat_mean_BP = as.data.frame(mean_BP)
-  sd_BP[[i]] = sd.all(strain_list[[i]]$PtN_real,
-                       list(strain_list[[i]]$Genotype))
-  dat_sd_BP = as.data.frame(sd_BP)
-}
+## Strain 09AX27
+```{r plot.design 09AX27, fig.height=8, fig.width=10, warning=FALSE}
+str(s09AX27_clean)
 
-names(dat_mean_BP) = c("s09AX27", "BP_Mean_09AX27",
-                        "s93JE3", "BP_Mean_93JE3",
-                        "sP72", "BP_Mean_P72")
-dat_mean_BP[dat_mean_BP == "NaN"] = NA
+# Individuals and blocks have to be converted from character to factor.
 
-names(dat_sd_BP) = c("s09AX27", "Sd_09AX27",
-                      "s93JE3", "Sd_93JE3",
-                      "sP72", "Sd_P72")
+s09AX27_clean$Block = as.factor(s09AX27_clean$Block)
+s09AX27_clean$Genotype = as.factor(s09AX27_clean$Genotype)
 
-# Join them (per strain) with sd and mean
-s09AX27_means$BP_mean = dat_mean_BP$BP_Mean_09AX27
-s09AX27_means$BP_sd = dat_sd_BP$Sd_09AX27
+par(mfrow = c(2,2))
 
-s93JE3_means$BP_mean = dat_mean_BP$BP_Mean_93JE3
-s93JE3_means$BP_sd = dat_sd_BP$Sd_93JE3
 
-sP72_means$BP_mean = dat_mean_BP$BP_Mean_P72
-sP72_means$BP_sd = dat_sd_BP$Sd_P72
+plot.design(s09AX27_clean, y = s09AX27_clean$Laten_24.02.15_gp, ylab = "Mean LP")
+plot.design(s09AX27_clean, y = s09AX27_clean$total_NbSS, ylab = "Mean UN")
+plot.design(s09AX27_clean, y = s09AX27_clean$Taill_05.08.20_gp, ylab = "Mean US")
 ```
 
-### Graphical inspection for strain 09AX27
-```{r BP mean ggplot 09AX27}
-ggplot(s09AX27_means) +
-  geom_bar(aes(x = Genotype, y = BP_mean), 
-           stat = "identity", 
-           fill = "navy",
-           na.rm = TRUE) +
-  geom_errorbar(aes(x = Genotype, ymin = BP_mean - BP_sd,
-                    ymax = BP_mean + BP_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (09AX27)", y = "Mean Black Points\n", 
-       title = "BP genotypic means across blocks") +
-  ylim(0,15) +
-  theme_bw() +
-  theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
+## Strain 93JE3
+```{r plot.design 93JE3, fig.height=8, fig.width=10, warning=FALSE}
+s93JE3_clean$Block = as.factor(s93JE3_clean$Block)
+s93JE3_clean$Genotype = as.factor(s93JE3_clean$Genotype)
+
+par(mfrow = c(2,2))
+plot.design(s93JE3_clean, y = s93JE3_clean$Laten_24.02.15_gp, ylab = "Mean LP")
+plot.design(s93JE3_clean, y = s93JE3_clean$total_NbSS, ylab = "Mean UN")
+plot.design(s93JE3_clean, y = s93JE3_clean$Taill_05.08.20_gp, ylab = "Mean US")
+plot.design(s93JE3_clean, y = s93JE3_clean$PtN_real, ylab = "Mean Black Points")
 ```
 
-### Graphical inspection for strain 93JE3
-```{r BP mean ggplot 93JE3}
-ggplot(s93JE3_means) +
-  geom_bar(aes(x = Genotype, y = BP_mean), 
-           stat = "identity", 
-           fill = "navy",
-           na.rm = TRUE) +
-  geom_errorbar(aes(x = Genotype, ymin = BP_mean - BP_sd,
-                    ymax = BP_mean + BP_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (09AX27)", y = "Mean Black Points\n", 
-       title = "BP genotypic means across blocks") +
-  ylim(0,15) +
-  theme_bw() +
-  theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
-```
+## Strain P72
+```{r plot.design P72, fig.height=8, fig.width=10, warning=FALSE}
+sP72_clean$Block = as.factor(sP72_clean$Block)
+sP72_clean$Genotype = as.factor(sP72_clean$Genotype)
 
-### Graphical inspection for strain P72
-```{r BP mean ggplot P72}
-ggplot(sP72_means) +
-  geom_bar(aes(x = Genotype, y = BP_mean), 
-           stat = "identity", 
-           fill = "navy",
-           na.rm = TRUE) +
-  geom_errorbar(aes(x = Genotype, ymin = BP_mean - BP_sd,
-                    ymax = BP_mean + BP_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (09AX27)", y = "Mean Black Points\n", 
-       title = "BP genotypic means across blocks") +
-  ylim(0,15) +
-  theme_bw() +
-  theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
+par(mfrow = c(2,2))
+plot.design(sP72_clean, y = sP72_clean$Laten_24.02.15_gp, ylab = "Mean LP")
+plot.design(sP72_clean, y = sP72_clean$total_NbSS, ylab = "Mean UN")
+plot.design(sP72_clean, y = sP72_clean$Taill_05.08.20_gp, ylab = "Mean US")
+plot.design(sP72_clean, y = sP72_clean$PtN_real, ylab = "Mean Black Points")
 ```
 
 # Saving the .RData for prelim analysis step 3
