@@ -496,6 +496,7 @@ US_mean_72 =
 US_mean_graph = ggpubr::ggarrange(US_mean_09, US_mean_93, US_mean_72)
 
 US_mean_graph
+
 ```
 
 # BOOKMARK
