@@ -288,6 +288,8 @@ LP_mean_graph
 
 ## For variable uredinia number
 ```{r UN mean sd}
+# Preparing the mean and standard deviation
+
 # List for loop = strain_list
 # Function: mean.all and sd.all
 
@@ -326,7 +328,7 @@ sP72_means$UN_mean = dat_mean_UN$UN_Mean_P72
 sP72_means$UN_sd = dat_sd_UN$Sd_P72
 ```
 
-```{r UN mean ggplot 09AX27, message=FALSE, warning=FALSE}
+```{r UN mean ggplot, message=FALSE, warning=FALSE}
 # Graphical inspection (UN) for pathogen 09AX27
 UN_mean_09 = 
   ggplot(data = s09AX27_means) +
@@ -392,28 +394,36 @@ UN_mean_graph
 ## For variable uredinia size
 ## Genotypic mean and sd for uredinia size (US) strain 09AX27, 93JE3 and P72
 ```{r US mean sd}
+# Preparing the mean and standard deviation
+
 # List for loop = strain_list
 # Function: mean.all and sd.all
 
 mean_US = list()
+
 sd_US = list()
+
 for (i in 1:length(strain_list)) {
   mean_US[[i]] = mean.all(strain_list[[i]]$Taill_05.08.20_gp,
                            list(strain_list[[i]]$Genotype))
+  
   dat_mean_US = as.data.frame(mean_US)
+  
   sd_US[[i]] = sd.all(strain_list[[i]]$Taill_05.08.20_gp,
                        list(strain_list[[i]]$Genotype))
+  
   dat_sd_US = as.data.frame(sd_US)
 }
 
 names(dat_mean_US) = c("s09AX27", "US_Mean_09AX27",
                         "s93JE3", "US_Mean_93JE3",
                         "sP72", "US_Mean_P72")
+
 names(dat_sd_US) = c("s09AX27", "Sd_09AX27",
                       "s93JE3", "Sd_93JE3",
                       "sP72", "Sd_P72")
 
-# Join them (per strain) with sd and mean
+# Join them (per pathogen) with sd and mean
 s09AX27_means$US_mean = dat_mean_US$US_Mean_09AX27
 s09AX27_means$US_sd = dat_sd_US$Sd_09AX27
 
@@ -425,53 +435,70 @@ sP72_means$US_sd = dat_sd_US$Sd_P72
 ```
 
 ### Graphical inspection for strain 09AX27
-```{r US mean ggplot 09AX27}
-ggplot(s09AX27_means) +
+```{r US mean ggplot}
+# Graphical inspection (US) for pathogen 09AX27
+US_mean_09 = 
+  ggplot(data = s09AX27_means) +
   geom_bar(aes(x = Genotype, y = US_mean), 
            stat = "identity", 
-           fill = "darkseagreen4",
-           na.rm = TRUE) +
+           fill = "#8B3A62",
+           color = "#e9ecef",
+           alpha = 0.9) +
   geom_errorbar(aes(x = Genotype, ymin = US_mean - US_sd,
-                    ymax = US_mean + US_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (09AX27)", y = "Mean Uredinia Size\n", 
-       title = "US genotypic means across blocks") +
-  theme_bw() +
+                    ymax = US_mean + US_sd), color = "#6E7B8B", size = 0.5) +
+  labs(x = "Individuals", y = "Mean Uredinia Size (score)", 
+       title = "Overall Individual Response", subtitle = "Pathogen = 09AX27") +
+  ylim(0,5) +
+  hrbrthemes::theme_ipsum() +
   theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
-```
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
 
-### Graphical inspection for strain 93JE3
-```{r US mean ggplot 93JE3}
-ggplot(s93JE3_means) +
+# Graphical inspection (US) for pathogen 93JE3
+US_mean_93 = 
+  ggplot(data = s93JE3_means) +
   geom_bar(aes(x = Genotype, y = US_mean), 
            stat = "identity", 
-           fill = "darkseagreen4",
-           na.rm = TRUE) +
+           fill = "#8B3A62",
+           color = "#e9ecef",
+           alpha = 0.9) +
   geom_errorbar(aes(x = Genotype, ymin = US_mean - US_sd,
-                    ymax = US_mean + US_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (09AX27)", y = "Mean Uredinia Size\n", 
-       title = "US genotypic means across blocks") +
-  theme_bw() +
+                    ymax = US_mean + US_sd), color = "#6E7B8B", size = 0.5) +
+  labs(x = "Individuals", y = "Mean Uredinia Size (score)", 
+       title = element_blank(), subtitle = "Pathogen = 93JE3") +
+  ylim(0,5) +
+  hrbrthemes::theme_ipsum() +
   theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
-```
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
 
-### Graphical inspection for strain P72
-```{r US mean ggplot P72}
-ggplot(sP72_means) +
+# Graphical inspection (US) for pathogen P72
+US_mean_72 = 
+  ggplot(data = sP72_means) +
   geom_bar(aes(x = Genotype, y = US_mean), 
            stat = "identity", 
-           fill = "darkseagreen4",
-           na.rm = TRUE) +
+           fill = "#8B3A62",
+           color = "#e9ecef",
+           alpha = 0.9) +
   geom_errorbar(aes(x = Genotype, ymin = US_mean - US_sd,
-                    ymax = US_mean + US_sd), color = "orange", size = 1) +
-  labs(x = "\nGenotypes (09AX27)", y = "Mean Uredinia Size\n", 
-       title = "US genotypic means across blocks") +
-  theme_bw() +
+                    ymax = US_mean + US_sd), color = "#6E7B8B", size = 0.5) +
+  labs(x = "Individuals", y = "Mean Uredinia Size (score)", 
+       title = element_blank(), subtitle = "Pathogen = P72") +
+  ylim(0,5) +
+  hrbrthemes::theme_ipsum() +
   theme(axis.text.x = element_blank(),
-        panel.grid = element_blank())
+        plot.title = element_text(size = 12),
+        plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+US_mean_graph = ggpubr::ggarrange(US_mean_09, US_mean_93, US_mean_72)
+
+US_mean_graph
 ```
 
+# BOOKMARK
 # Comparing the individual and block mean in graphs
 Visual comparison to see whether individual mean and block mean are different or not.
 
