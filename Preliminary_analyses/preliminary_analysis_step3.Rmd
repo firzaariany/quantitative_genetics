@@ -10,99 +10,91 @@ output:
 ---
 
 # Description
-The rust test was conducted in the Rust Lab INRAE Orléans during the period 15 - 30 July 2020. This script is intended for a preliminary analysis before proceeding to association modeling and reaction norm modeling under the project **B4EST WP 3: Black poplar/rust pathosystem.**  
-  
-Previous steps have been conducted to see:  
-1. Verify the pathotype of the strains (for each strain).  
-2. Check the incompatible genotypes.  
-3. Understand the global distribution of each phenotype.  
-4. Understand the variability in distribution of the phenotypes for each strain.  
-5. Observe the trait mean across blocks (Genotypic mean) and genotypes (Block mean).  
-6. Graphical inspection of genotypic mean across block.  
 
-# Objectives
-This step 3 is to:  
-1. Visualize the experimental plot in the lab.  
-2. Adjust the phenotypic values after eliminating block effects.  
+In my experimental dataset, I had 154 poplar individuals infected by 3 pathogens that were spanning across 5 blocks. The intention of having the blocks is for repetition and to avoid bias. Because I wanted to use this dataset to model the association between genes and resistance components, I had to average the values (of the resistance components) across 5 blocks, to get only one value for each individual.
 
 # Input
+
 ```{r input}
 load(file = "prelim_step2.RData")  # RData prepared from prelim analysis step 2
 ```
 
 # Libraries
+
 ```{r library}
 library(ggplot2)  # To map the experimental design  
 library(breedR)  # To model the source of phenotypic variation
 ```
 
-# Visualizing the experimental plot in the lab
-The genotypes were placed in the growth chamber with specialized coordinate positions.  
-The experimental design is as follows:  
-* 3 strains were used as ‘treatments’  
-* 168 genotypes were used for each strain  
-* 168 genotypes x 3 strains were replicated in 5 blocks  
-
-## Strain 09AX27
-```{r plot 09AX27}
-loop.vector <- 1:4  # creating the length of loop sequence
-
-for (i in loop.vector){  # for phenotype i in length
-  var <- s09AX27_loop[,i]  # storing the phenotypes in object var
-  title <- names(s09AX27_loop[i])  # preparing the title for plot title
-  plot <- qplot(X, Y, fill = var, geom = "tile", main = paste("09AX27", title),   # fill is based on variation in phenotypes
-                data = s09AX27_clean, xlab = "X", ylab = "Y") + 
-    scale_fill_gradient(low = "green", high = "red") 
-  print(plot)
-}
-```
-
-## Strain 93JE3
-```{r plot 93JE3}
-for (i in loop.vector){
-  var <- s93JE3_loop[,i]
-  title <- names(s93JE3_loop[i])
-  plot2 <- qplot(X, Y, fill = var, geom = "tile", main = paste("93JE3", title), 
-                data = s93JE3_clean, xlab = "X", ylab = "Y") + 
-    scale_fill_gradient(low = "green", high = "red") 
-  print(plot2)
-}
-```
-
-## Strain P72
-```{r plot P72}
-for (i in loop.vector){
-  var <- sP72_loop[,i]
-  title <- names(sP72_loop[i])
-  plot3 <- qplot(X, Y, fill = var, geom = "tile", main = paste("P72", title), 
-                 data = sP72_clean, xlab = "X", ylab = "Y") + 
-    scale_fill_gradient(low = "green", high = "red") 
-  print(plot3)
-}
-```
-  
-Pay attention to the different coordinate of each plot.  
-
 # Observing block effects using mixed-effects model
+
+I used mixed-effects model to analyze the effects of block and genotypes to the variance of the resistance components. Mixed-effects model is a regular model used in animal and plant breeding. There are two parts in the mixed-effects model:
+
+-   Fixed part: The factor/variable whose effect is directly affecting the variance of the response variable and whose effect that we would like to test the hypothesis with. In a simple term, I would say this is "a direct variable that affects our test"
+
+-   Random part: The factors/variables whose effects are indirectly affecting the variance of response variable and whose effects that we would not consider to test our hypothesis. In a simple term, I would say this is "an indirect or background variable that can affect the variance of our response variable"
+
+In this section, I wanted to adjust the values of my resistance components. In a simple word, I wanted to **eliminate block effects from the values of my resistance components**.
+
+-   To do that, I used the resistance components as the response variables.
+
+-   I fitted the resistance components to the fixed part of the model so that the model could find the average of the values of the resistance components in the form of an intercept.
+
+-   I fitted the genotype and block as random effects because I considered them as the background effects that affect the variance in my resistance components.
+
+------------------------------------------------------------------------
+
+To check the significant effects of the genotypes I did the following:
+
+-   Made a null model where neither the genotypes nor the blocks were fitted to the fixed part (the procedures above are the procedures to make a null model)
+
+-   Made a model where genotypes were fitted to the fixed part (genotype_fit)
+
+-   Used chi-square test of the log likelihood between the null model and genotype_fit
+
+-   If the test return a value below 0.05, it means that genotypes have a significant effect on the variance in the resistance components
+
+-   If the test return a value above 0.05, it means that genotypes do not have a significant effect.
+
+------------------------------------------------------------------------
+
+To check the significant effects of the blocks, I will do the following:
+
+-   A null model
+
+-   A model where blocks were fitted to the fixed part (blUsed chi-square test of the log likelihood between the null model and genotype_fit
+
+-   Used chi-square test of the log likelihood between the null model and block_fit
+
+-   If the test return a value below 0.05, it means that blocks have a significant effect on the variance in the resistance components
+
+-   If the test return a value above 0.05, it means that blocks do not have a significant effect.
+
 ```{r mixmod, message=FALSE, warning=FALSE}
 # strain_list <- strain_list <- list(s09AX27_clean, s93JE3_clean, sP72_clean) 
-# list: strain_list, 1 = 09AX27, 2 = 93JE3, 3 = P72
+# List: strain_list, 1 = 09AX27, 2 = 93JE3, 3 = P72
 # strain_list is available in prelim analysis step 2, already saved as .RData
-# excluding black points (BP) because it contains many NAs
 
-LP_mix <- list()  # creating an empty list for each model
-UN_mix <- list()
-US_mix <- list()
-for (i in 1:length(strain_list)) {  # loop created for strain i in length
-  LP_mix[[i]] <- remlf90(fixed = Laten_24.02.15_gp ~ 1,  # storing mixmod for LP
+# I will run the model in a loop
+
+# First, creating an empty list for each of the resistance components
+
+LP_mix <- list()  # For latent period
+
+UN_mix <- list() # For uredinia number
+
+US_mix <- list() # For uredinia size
+
+for (i in 1:length(strain_list)) {  # For i in 1:3 (because there are 3 pathogens)
+  LP_mix[[i]] <- remlf90(fixed = Laten_24.02.15_gp ~ 1,  # Mixmod for latent period
+                         random = ~ Genotype + Block,
+                         data = strain_list[[i]], # For pathogen 1, then 2, then 3
+                         method = "ai")
+  UN_mix[[i]] <- remlf90(fixed = total_NbSS ~ 1,  # Mixmod for uredinia number
                          random = ~ Genotype + Block,
                          data = strain_list[[i]],
                          method = "ai")
-  UN_mix[[i]] <- remlf90(fixed = total_NbSS ~ 1,  # continue to mixmod for UN
-                         random = ~ Genotype + Block,
-                         data = strain_list[[i]],
-                         method = "ai")
-  US_mix[[i]] <- remlf90(fixed = Taill_05.08.20_gp ~ 1,
+  US_mix[[i]] <- remlf90(fixed = Taill_05.08.20_gp ~ 1, # Mixmod for uredinia size
                          random = ~ Genotype + Block,
                          data = strain_list[[i]],
                          method = "ai")
@@ -111,19 +103,61 @@ for (i in 1:length(strain_list)) {  # loop created for strain i in length
 summary(LP_mix[[1]])  # LP mixed model for strain 09AX27
 ```
 
+I used remlf90 from the breedR package.
+
+How to read the results:
+
+-   Intercept: the average latent period
+
+```{=html}
+<!-- -->
+```
+-   Variance components: the result from random effects (in this case, genotypes and blocks)
+
+-   Estimated variance: the estimated variances associated to genotype and block. To calculate the contribution of genotype to the total variance in latent period:
+
+```{r genotype to total var}
+genot_var = LP_mix[[1]]$var[[1]] / (LP_mix[[1]]$var[[1]] + LP_mix[[1]]$var[[2]] +
+                                      LP_mix[[1]]$var[[3]])
+
+# Est. var genotype / (est. var genotype + block + residual)
+
+genot_var
+```
+
+So, it means that genotypes contribute to 27% of the variance in latent period. I was only checking LP_mix[[1]]. This list contains the estimated variance for poplar individuals *infected with pathogen 09AX27*. So, this result only applies to the individuals infected with 09AX27. FYI, LP_mix[[2]] contains the variance for the individuals infected with 93JE3, and LP_mix[[3]] with P72.
+
+[[1]] = 09AX27
+
+[[2]] = 93JE3
+
+[[3]] = P72
+
+Checking the significance of block effects ?
+
+Create the function to do that
+
+If \< 0.05 = significant
+
+if \> 0.05 = not significant
+
 ## Variogram of the residuals (Strain 09AX27 for all traits)
-From LP_mix for strain 09AX27, residuals explain ~60% of phenotypic variance.  
-Would be good to inspect the residuals using variogram. 
+
+From LP_mix for strain 09AX27, residuals explain \~60% of phenotypic variance.\
+Would be good to inspect the residuals using variogram.
 
 ### Latent Period
+
 ```{r variogram LP 09AX27}
 variogram(LP_mix[[1]], coord = s09AX27_clean[, colnames(s09AX27_clean) %in% c("X", "Y")],
           R = 30)
 ```
-Seem that residuals come from environmental variation (related to the coordinates where the genotypes were placed).  
-Checking other models (UN and US).  
+
+Seem that residuals come from environmental variation (related to the coordinates where the genotypes were placed).\
+Checking other models (UN and US).
 
 ### Uredinia Number
+
 ```{r UN_mix 09AX27}
 summary(UN_mix[[1]])  # UN mixmod strain 09AX27
 
@@ -132,6 +166,7 @@ variogram(UN_mix[[1]], coord = s09AX27_clean[, colnames(s09AX27_clean) %in% c("X
 ```
 
 ### Uredinia Size
+
 ```{r US_mix 09AX27}
 summary(US_mix[[1]])  # US mixmod strain 09AX27
 
@@ -140,7 +175,9 @@ variogram(US_mix[[1]], coord = s09AX27_clean[, colnames(s09AX27_clean) %in% c("X
 ```
 
 ## Variogram of the residuals (Strain 93JE3 for all traits)
+
 ### Latent Period
+
 ```{r LP_mix 93JE3}
 summary(LP_mix[[2]])  # LP mixmod strain 93JE3
 
@@ -149,6 +186,7 @@ variogram(LP_mix[[2]], coord = s93JE3_clean[, colnames(s93JE3_clean) %in% c("X",
 ```
 
 ### Uredinia Number
+
 ```{r UN_mix 93JE3}
 summary(UN_mix[[2]])  # UN mixmod strain 93JE3
 
@@ -157,6 +195,7 @@ variogram(UN_mix[[2]], coord = s93JE3_clean[, colnames(s93JE3_clean) %in% c("X",
 ```
 
 ### Uredinia size
+
 ```{r US_mix 93JE3}
 summary(US_mix[[2]])  # US mixmod strain 93JE3
 
@@ -165,7 +204,9 @@ variogram(US_mix[[2]], coord = s93JE3_clean[, colnames(s93JE3_clean) %in% c("X",
 ```
 
 ## Variogram of the residuals (Strain P72 for all traits)
+
 ### Latent Period
+
 ```{r LP_mix P72}
 summary(LP_mix[[3]])  # LP mixmod P72
 
@@ -174,6 +215,7 @@ variogram(LP_mix[[3]], coord = sP72_clean[, colnames(sP72_clean) %in% c("X", "Y"
 ```
 
 ### Uredinia Number
+
 ```{r UN_mix P72}
 summary(UN_mix[[3]])  # UN mixmod strain P72
 
@@ -182,6 +224,7 @@ variogram(UN_mix[[3]], coord = sP72_clean[, colnames(sP72_clean) %in% c("X", "Y"
 ```
 
 ### Uredinia Size
+
 ```{r US_mix P72}
 summary(US_mix[[3]])  # US mixmod strain P72
 
@@ -190,7 +233,9 @@ variogram(US_mix[[3]], coord = sP72_clean[, colnames(sP72_clean) %in% c("X", "Y"
 ```
 
 # Adjusting the phenotypes from block effects
+
 Because blocks are a systematic variation that affects the variation in phenotypes, we have to remove them.
+
 ```{r functions adj}
 # Functions for adjustment ----
 fun.coord <- function(X, Y){  # X and Y are coordinates from the dataset
@@ -228,6 +273,7 @@ adj <- function(x){  # x being the name of data frame object
 ```
 
 ## Adjusting LP
+
 ```{r adj LP}
 adj_LP <- list(s09AX27_clean[, -c(6:15)],  # creating a list of dataframe to store loop result
                s93JE3_clean[, -c(6:15)],
@@ -245,6 +291,7 @@ for (x in 1:length(adj_LP)){  # x in data frame 1 - 3
 ```
 
 ## Adjusting UN
+
 ```{r adj UN}
 adj_UN <- list(s09AX27_clean[, -c(6:15)],
                s93JE3_clean[, -c(6:15)],
@@ -261,6 +308,7 @@ for (x in 1:length(adj_UN)){
 ```
 
 ## Adjusting US
+
 ```{r adj US}
 adj_US <- list(s09AX27_clean[, -c(6:15)],
                s93JE3_clean[, -c(6:15)],
@@ -276,8 +324,8 @@ for (x in 1:length(adj_US)){
 }
 ```
 
-
 ## Extracting the adjusted traits
+
 ```{r head 09AX27}
 # Strain 09AX27
 adj_s09AX27 <- s09AX27_clean[, -c(6:15)]
@@ -339,6 +387,7 @@ write.table(adj_sP72, "adj_traits_sP72.txt", sep = "\t", na = "NA",
 ```
 
 # Saving .RData for future analysis
+
 ```{r save RData, message=FALSE, warning=FALSE, eval=FALSE}
 save(s09AX27_clean, s93JE3_clean, sP72_clean, strain_list,
      s09AX27_loop, s93JE3_loop, sP72_loop,
