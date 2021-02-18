@@ -28,7 +28,7 @@ library(breedR)  # To model the source of phenotypic variation
 
 # Observing block effects using mixed-effects model
 
-I used mixed-effects model to analyze the effects of block and genotypes to the variance of the resistance components. Mixed-effects model is a regular model used in animal and plant breeding. There are two parts in the mixed-effects model:
+I used mixed-effects model to analyze the effects of block and individuals to the variance of the resistance components. Mixed-effects model is a regular model used in animal and plant breeding. There are two parts in the mixed-effects model:
 
 -   Fixed part: The factor/variable whose effect is directly affecting the variance of the response variable and whose effect that we would like to test the hypothesis with. In a simple term, I would say this is "a direct variable that affects our test"
 
@@ -44,17 +44,17 @@ In this section, I wanted to adjust the values of my resistance components. In a
 
 ------------------------------------------------------------------------
 
-To check the significant effects of the genotypes I did the following:
+To check the significant effects of the individuals I did the following:
 
--   Made a null model where neither the genotypes nor the blocks were fitted to the fixed part (the procedures above are the procedures to make a null model)
+-   Made a null model where neither the individuals nor the blocks were fitted to the fixed part (the procedures above are the procedures to make a null model)
 
--   Made a model where genotypes were fitted to the fixed part (genotype_fit)
+-   Made a model where individuals were fitted to the fixed part (genotype_fit)
 
 -   Used chi-square test of the log likelihood between the null model and genotype_fit
 
--   If the test return a value below 0.05, it means that genotypes have a significant effect on the variance in the resistance components
+-   If the test return a value below 0.05, it means that individuals have a significant effect on the variance in the resistance components
 
--   If the test return a value above 0.05, it means that genotypes do not have a significant effect.
+-   If the test return a value above 0.05, it means that individuals do not have a significant effect.
 
 ------------------------------------------------------------------------
 
@@ -62,7 +62,7 @@ To check the significant effects of the blocks, I will do the following:
 
 -   A null model
 
--   A model where blocks were fitted to the fixed part (blUsed chi-square test of the log likelihood between the null model and genotype_fit
+-   A model where blocks were fitted to the fixed part (block_fit)
 
 -   Used chi-square test of the log likelihood between the null model and block_fit
 
@@ -100,7 +100,7 @@ for (i in 1:length(strain_list)) {  # For i in 1:3 (because there are 3 pathogen
                          method = "ai")
 }
 
-summary(LP_mix[[1]])  # LP mixed model for strain 09AX27
+summary(LP_mix[[1]])  # LP mixed model for pathogen 09AX27 (coded 1 in the strain_list)
 ```
 
 I used remlf90 from the breedR package.
@@ -108,12 +108,7 @@ I used remlf90 from the breedR package.
 How to read the results:
 
 -   Intercept: the average latent period
-
-```{=html}
-<!-- -->
-```
--   Variance components: the result from random effects (in this case, genotypes and blocks)
-
+-   Variance components: the result from random effects (in this case, individuals and blocks)
 -   Estimated variance: the estimated variances associated to genotype and block. To calculate the contribution of genotype to the total variance in latent period:
 
 ```{r genotype to total var}
@@ -125,21 +120,63 @@ genot_var = LP_mix[[1]]$var[[1]] / (LP_mix[[1]]$var[[1]] + LP_mix[[1]]$var[[2]] 
 genot_var
 ```
 
-So, it means that genotypes contribute to 27% of the variance in latent period. I was only checking LP_mix[[1]]. This list contains the estimated variance for poplar individuals *infected with pathogen 09AX27*. So, this result only applies to the individuals infected with 09AX27. FYI, LP_mix[[2]] contains the variance for the individuals infected with 93JE3, and LP_mix[[3]] with P72.
+So, it means that individuals contribute to 27% of the variance in latent period. I was only checking LP_mix[[1]]. This list contains the estimated variance for poplar individuals *infected with pathogen 09AX27*. So, this result only applies to the individuals infected with 09AX27. FYI, LP_mix[[2]] contains the variance for the individuals infected with 93JE3, and LP_mix[[3]] with P72.
 
-[[1]] = 09AX27
+Then I wanted to see if individuals or blocks have significant effects. I will focus only on the resistance components latent period (LP) when the individuals are infected by pathogen 09AX27.
 
-[[2]] = 93JE3
+### Checking the effects of individuals
 
-[[3]] = P72
+```{r fix = genotype}
+genot_fit_LP <- remlf90(fixed = Laten_24.02.15_gp ~ Genotype,  # fitted = genotype
+                        random =  ~ Block,
+                        data = strain_list[[1]],  # dataset for pathogen 09AX27
+                        method = "ai")
 
-Checking the significance of block effects ?
+summary(genot_fit_LP)
 
-Create the function to do that
+# Function to check the significance of individuals and blocks
 
-If \< 0.05 = significant
+sig.fun = function(random, non_random, n_test){
+  stat = 2*(random - non_random)
+  
+  sig = 1 - pchisq(stat, n_test)
+  
+  return(sig)
+}
 
-if \> 0.05 = not significant
+random_LP_09 = LP_mix[[1]]$fit$`-2logL` # Getting the log-likelihood from mixed model LP infected with pathogen 09AX27, genotype not in the fixed part
+
+nonrand_LP_09 = genot_fit_LP$fit$`-2logL` # Getting the log-likelihood from mixed model LP infected with pathogen 09AX27, genotype in the fixed part
+
+# Checking the significance of individuals
+sig.fun(random = random_LP_09, non_random = nonrand_LP_09, n_test = 153)
+
+```
+
+Result: individuals have significant effects on the variance in latent period for individuals infected with pathogen 09AX27.
+
+What about the block effects?
+
+### Checking the effects of blocks
+
+```{r fix = blocks}
+block_fit_LP = remlf90(fixed = Laten_24.02.15_gp ~ Block, # fitted = blocks
+                       random =  ~ Genotype,
+                       data = strain_list[[1]], # LP for individuals infected with 09AX27
+                       method = "ai")
+
+summary(block_fit_LP)
+
+# random_LP_09
+nonrand2_LP_09 = block_fit_LP$fit$`-2logL` # Getting the log-likelihood from mixed model LP infected with pathogen 09AX27, block in the fixed part
+
+# Checking the significance of blocks
+sig.fun(random = random_LP_09, non_random = nonrand2_LP_09, n_test = 4)
+```
+
+Turned out blocks do not have a significant effects on the variance in latent period for the individuals infected with pathogen 09AX27.
+
+This is a good indicator for experimental trial. It is expected that individuals should have significant effects on the variance of the resistance components. Moreover, the further analysis is to detect the extent of genetics effects to the resistance components. So, the result makes sense. Furthermore, an experimental design should not introduce a systematic effect to the resistance components. Systematic effects can be from blocks or sample arrangement in the experimental design. It introduces bias to the analysis. So, the ideal result from a good experimental design is non-significant effects from blocks, like how it is shown in the result in this analysis.
 
 ## Variogram of the residuals (Strain 09AX27 for all traits)
 
