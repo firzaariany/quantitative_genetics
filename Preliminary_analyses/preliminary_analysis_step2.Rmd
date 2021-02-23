@@ -15,7 +15,7 @@ editor_options:
 # Description
 
 Before I dive into it, I should remind you that the experimental design
-I used was 154 individuals spanning across 5 blocks. Each individual in
+I used is 154 individuals spanning across 5 blocks. Each individual in
 each block was infected by 3 pathogens. I collected 3 variables: latent
 period (LP), uredinia number (UN), and uredinia size (US) to observe
 poplar's resistance.

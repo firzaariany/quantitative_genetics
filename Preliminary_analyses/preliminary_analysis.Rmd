@@ -7,6 +7,9 @@ output:
   html_document:
     toc: TRUE
     number_sections: TRUE
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
@@ -15,56 +18,61 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Description.
 
-The general aim of the following study was to find the genetic potential of 
-black poplar's resistance (*Populus nigra*) when they are infected by rust.
+The general aim of the following study was to find the genetic potential
+of black poplar's resistance (*Populus nigra*) when they are infected by
+rust.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE, out.width="30%"}
 library(jpeg)
 library(knitr)
 
 include_graphics(c("rust_infection_2.jpg", "Screenshot_2.png", "rust_infection_1.jpg"))
-``` 
-  
-Here are the illustrations when black poplar leaves are infected by rust.
-The picture on the left is an overall infection, and the picture on the right
-is a zoomed visualization.  
-  
-Before proceeding to a more sophisticated modeling, I conducted an Exploratory
-Data Analysis (EDA) to gather insights from the dataset.  
+```
 
----
+Here are the illustrations when black poplar leaves are infected by
+rust. The picture on the left is an overall infection, and the picture
+on the right is a zoomed visualization.
 
-**About the raw dataset and the species used**  
+Before proceeding to a more sophisticated modeling, I conducted an
+Exploratory Data Analysis (EDA) to gather insights from the dataset.
 
-The raw data consists of the measurement in the lab for poplar resistance.   
-  
-The variables needed in the analysis were:  
-- **Latent period, coded as Laten**    
-- **Number of spores, coded as NbSS**  
-_ **Size of spores, coded as Taiil**  
-  
-These are the indication of infection on poplar leaves.  
-  
-The spesies is black poplar (*Populus nigra*) that was collected from several
-natural populations and sources in Western Europe.
+------------------------------------------------------------------------
+
+**About the raw dataset and the species used**
+
+The raw data consists of the measurement in the lab for poplar
+resistance.
+
+The variables needed in the analysis were:\
+- **Latent period, coded as Laten**\
+- **Number of spores, coded as NbSS**\
+\_ **Size of spores, coded as Taiil**
+
+These are the indication of infection on poplar leaves.
+
+The spesies is black poplar (*Populus nigra*) that was collected from
+several natural populations and sources in Western Europe.
 
 **Experimental design**
 
 The experimental design was as follow: 168 individuals (including the
-discriminants) spread across 5 blocks were inoculated with 3 rust strains.
-These make up a total 2520 observations of 15 variables.  
-  
-Note. not all variables are going to be used, we will see as we proceed through
-this script.  
-  
-The objectives of this first step of prelim analysis were:  
+discriminants) spread across 5 blocks were inoculated with 3 rust
+strains. These make up a total 2520 observations of 15 variables.
+
+Note. not all variables are going to be used, we will see as we proceed
+through this script.
+
+The objectives of this first step of prelim analysis were:
 
 ## Objectives.
-1. Check the resistant vs susceptible individuals.  
-2. Understand the global distribution of each phenotype.  
-3. Understand the variability in distribution of the phenotypes for each strain.  
-  
+
+1.  Check the resistant vs susceptible individuals.\
+2.  Understand the global distribution of each phenotype.\
+3.  Understand the variability in distribution of the phenotypes for
+    each strain.
+
 # Preparation (libraries, working directory, data set).
+
 ```{r preparation, message=FALSE, warning=FALSE}
 # Libraries
 library(plyr)  # to create a frequency table of resistant vs susceptible individuals
@@ -85,16 +93,19 @@ head(test1_selec)
 
 # Checking the resistant vs susceptible individuals.
 
-This step will result in two groups of individuals; resistant and susceptible
-individuals.  
-  
-*Resistant individuals are the individuals that are not interacting with the pathogen, thus do not have symptoms.*  
-  
-*Susceptible individuals are the individuals that are interacting with the pathogen, thus causing symptoms.*  
-  
-The checking was carried out after excluding the control individuals.  
+This step will result in two groups of individuals; resistant and
+susceptible individuals.
+
+*Resistant individuals are the individuals that are not interacting with
+the pathogen, thus do not have symptoms.*
+
+*Susceptible individuals are the individuals that are interacting with
+the pathogen, thus causing symptoms.*
+
+The checking was carried out after excluding the control individuals.
 
 ## Pathogen 09AX27
+
 ```{r compatibility 09AX27}
 # Subsetting the raw dataset by pathogen
 
@@ -152,6 +163,7 @@ resist_09AX27 = ggplot(test1_09AX27_nodisc, aes(x = Res_vs_sus)) +
 ```
 
 ## Strain 93JE3
+
 ```{r compatibility 93JE3}
 # Create a new column to differentiate normal individuals from discriminants 
 # and control (subject for inspection)
@@ -201,6 +213,7 @@ resist_93JE3 = ggplot(test1_93JE3_nodisc, aes(x = Res_vs_sus)) +
 ```
 
 ## Strain P72
+
 ```{r compatibility P72}
 # Create a new column to differentiate normal individuals from discriminants
 # and control (subject for inspection)
@@ -254,20 +267,21 @@ res_vs_sus = ggpubr::ggarrange(resist_09AX27, resist_93JE3, resist_P72)
 res_vs_sus
 ```
 
-Note resistant and susceptible are referring to poplar's responses. The rust
-id on the top shows the type of pathogen that infected the poplar. This graph
-shows the share of resistant and susceptible poplars when they were infected
-with different pathogen types. The poplars were behaving quite similarly. There
-were around 700 susceptible poplars. These are the poplars that I studied to see
-whether they were behaving differently or not. Also, whether they had the chance
-to fight the pathogen.
+Note resistant and susceptible are referring to poplar's responses. The
+rust id on the top shows the type of pathogen that infected the poplar.
+This graph shows the share of resistant and susceptible poplars when
+they were infected with different pathogen types. The poplars were
+behaving quite similarly. There were around 700 susceptible poplars.
+These are the poplars that I studied to see whether they were behaving
+differently or not. Also, whether they had the chance to fight the
+pathogen.
 
-Strictly speaking, it is rather tricky to say that these 700 poplars were
-susceptible. It is more effective to say that these 700 poplars were actively
-interacting with the pathogen, while the rest were not really interacting with
-the pathogen. When the poplars are interactive, it means that they can behave
-differently or they can fight the pathogen with different abilities. Let's stick
-with this definition now.
+Strictly speaking, it is rather tricky to say that these 700 poplars
+were susceptible. It is more effective to say that these 700 poplars
+were actively interacting with the pathogen, while the rest were not
+really interacting with the pathogen. When the poplars are interactive,
+it means that they can behave differently or they can fight the pathogen
+with different abilities. Let's stick with this definition now.
 
 ## Counting the completely resistant individuals (meaning that they are not interacting with the pathogen)
 
@@ -300,11 +314,12 @@ common_final
 
 ```
 
-Turned out three poplar individuals were completely resistant across all the
-pathogens. It means that they were completely not interacting with the pathogens.
-Pathogens' activities were indifferent to them.
+Turned out three poplar individuals were completely resistant across all
+the pathogens. It means that they were completely not interacting with
+the pathogens. Pathogens' activities were indifferent to them.
 
 # Graphical distribution of the variables for each pathogen
+
 In this step, I want to see the distribution of the variables.
 
 ```{r global dist prep}
@@ -371,13 +386,15 @@ for (i in loop.vector){
 ```
 
 # Graphical distribution of the variables for each pathogen
-So I see that latent period (LP) and uredinia number (UN) are skewed to the left,
-while uredinia size (US) was discrete. I will know what happens to these in  
-future analysis. 
 
-Now I want to cross check the previous distribution (that was not considering
-the different pathogens I used) with the following distribution where I sparse the 
-distribution based on the pathogens. 
+So I see that latent period (LP) and uredinia number (UN) are skewed to
+the left, while uredinia size (US) was discrete. I will know what
+happens to these in\
+future analysis.
+
+Now I want to cross check the previous distribution (that was not
+considering the different pathogens I used) with the following
+distribution where I sparse the distribution based on the pathogens.
 
 ```{r data prep}
 ## Subsetting the clean dataset based on pathogen
@@ -388,6 +405,7 @@ sP72_clean = test1_NA_nodisc[which(test1_NA_nodisc$Strain == "P72"),]
 ```
 
 ## Graphical inspection pathogen 09AX27
+
 ```{r trait dist 09AX27}
 s09AX27_loop = data.frame("LP" = s09AX27_clean$Laten_24.02.15_gp,
                            "UN" = s09AX27_clean$total_NbSS,
@@ -406,6 +424,7 @@ for (i in loop.vector){
 ```
 
 ## Graphical inspection pathogen 93JE3
+
 ```{r trait dist 93JE3}
 s93JE3_loop = data.frame("LP" = s93JE3_clean$Laten_24.02.15_gp,
                           "UN" = s93JE3_clean$total_NbSS,
@@ -423,6 +442,7 @@ for (i in loop.vector){
 ```
 
 ## Graphical inspection pathogen P72
+
 ```{r trait dist P72}
 sP72_loop = data.frame("LP" = sP72_clean$Laten_24.02.15_gp,
                         "UN" = sP72_clean$total_NbSS,
@@ -438,10 +458,11 @@ for (i in loop.vector){
        xlab = "Scores")
 }
 ```
-When I sparse the distribution of each variable based on the pathogens, the
-variables still follow the similar pattern as the previous one (without sparsing
-based on the pathogens). So probably it is a normal pattern in the interaction
-between poplars and their pathogen. 
+
+When I sparse the distribution of each variable based on the pathogens,
+the variables still follow the similar pattern as the previous one
+(without sparsing based on the pathogens). So probably it is a normal
+pattern in the interaction between poplars and their pathogen.
 
 ```{r eval=FALSE, include=FALSE}
 # Saving the Rdata for prelim analysis step 2
