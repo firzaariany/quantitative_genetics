@@ -98,3 +98,28 @@ correction factors.
 ----
 
 ## 🧇 Results
+
+**Observing the resistance in black poplars**
+
+The poplars were behaving differently when infected with different pathogens.
+There were resistance to some extent that was worth to be explored.
+
+**Depicting the genetic control of resistance** 
+
+I found 80 candidate genes related to the resistance components, applicable to all the pathogens.
+After detailed research, I found the genes that are either:
+* Directly associated with resistance in plants
+* Working as a mediator in plant defence mechanism
+
+Which are a good starting point to further the research with other sophisticated studies to understand the function
+and the regulation pathways of the candidate genes.
+
+**Interaction between the poplars and the pathogens**
+
+Interaction did influence the resistance of some poplars. This can mean either local adaptation or the specific
+requirements for the resistance to show in the natural environment. Either way, there is a possibility that this
+type of resistance can induce the mutation in the pathogen to create a more dangerous gene that can infect the
+poplar. This results to a non-durable resistance in poplar.
+
+
+## 🧇 The impact of the study
