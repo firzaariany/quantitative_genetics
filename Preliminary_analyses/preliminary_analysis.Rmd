@@ -525,9 +525,9 @@ smallest size (score = 3).
 resist the population of the spores from pathogen 09AX27. When the
 poplar leaves were populated by spores, poplar could still resist the
 spore population from pathogen 09AX27, but not from 93JE3 and P72.
-Approaching day 14 (the end of observation), poplars could not resist
-the growth of pathogen 09AX27 anymore, but could resist the growth of
-pathogen 93JE3, and especially pathogen P72.
+Approaching day 14 (incubation period = 14 days), poplars could not
+resist the growth of pathogen 09AX27 anymore, but could resist the
+growth of pathogen 93JE3, and especially pathogen P72.
 
 ```{r eval=FALSE, include=FALSE}
 # Saving the Rdata for prelim analysis step 2

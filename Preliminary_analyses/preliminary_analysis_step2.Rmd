@@ -1,12 +1,13 @@
 ---
-title: "Preliminary analysis 2 for rust test 1"
-subtitle: "The second step of prelim analysis" 
+title: "Exploratory Data Analysis"
 author: "Firza Riany"
 date: "20/08/2020"
 output: 
   html_document:
     toc: TRUE
-    number_sections: TRUE
+    toc_float: TRUE
+    code_folding: hide
+    theme: cosmo
 editor_options: 
   markdown: 
     wrap: 72
@@ -25,25 +26,17 @@ poplar's resistance.
 1.  Graphical illustration of experimental design.\
 2.  The overall response of individuals toward the infection.
 
-# Input
-
-```{r data input}
-load(file = "rdata_prelim_1.RData")  # RData prepared from previous prelim analysis
+```{r data input, include=FALSE}
+load(file = "prelim_step1.RData")  # RData prepared from previous prelim analysis
 ```
 
-# Libraries
-
-```{r libraries}
+```{r libraries, message=FALSE, warning=FALSE}
 library(ggplot2)  # To map the plot
 library(ggpubr)  # To arrange multiple plots
 library(hrbrthemes)  # To load theme_ipsum function in ggplot
 ```
 
 # Graphical illustration of the experimental design
-
-As I mentioned above, the data was collected from an experimental design
-of 154 individuals that were spread across 5 blocks. In each block the
-individuals were infected with 3 pathogens.
 
 In this section I will show you the position of the individuals in the
 plots of the experimental design (position is given by X and Y
@@ -127,12 +120,13 @@ UN_variation = ggpubr::ggarrange(UN_09_title, UN_93_title, UN_72_title)
 UN_variation
 ```
 
-It is not very easy to compare UN variation across pathogens. There is a
-high range for UN for each pathogen. However, I can see that individuals
-infected by pathogen 09AX27 showed smaller amount of uredinia than the
-other individuals infected by 93JE3 and P72. Individuals infected by P72
-showed the largest amount of uredinia, but most of them were showing
-uredinia number far below the largest amount.
+It is not very easy to compare the variation in uredinia number across
+pathogens. There is a high range of uredinia number for each pathogen.
+However, I can see that individuals infected by pathogen 09AX27 showed
+smaller amount of uredinia than the other individuals infected by 93JE3
+and P72. Some individuals infected by P72 showed the largest amount of
+uredinia, but most of them tended to have uredinia number far below the
+largest amount.
 
 ## For variable uredinia size
 
@@ -166,24 +160,32 @@ US_variation = ggpubr::ggarrange(US_09_title, US_93_title, US_72_title)
 US_variation
 ```
 
-The uredinia size (the size of the spore that present on the poplar
-leaves) was scored in 1 - 5 scales. In this graph, I can see that the
-pathogen 93JE3 creates big spore sizes in more poplars than the other
-two pathogens. It is indicated by more uniformity of the red color in
-the graph for pathogen 93JE3 than in the graphs for the other two
-pathogens.
+The uredinia size was scored in 1 - 5 scales (1 being the smallest, 5
+being the largest). I can see that individuals infected by pathogen
+93JE3 were suffering from spores with big sizes. There seem to be more
+poplars with big sizes when they were infected by 93JE3 than when they
+were infected by the other two. It is indicated by more uniformity of
+the red color in the graph for pathogen 93JE3 than in the graphs for the
+other two pathogens.
 
-# The overall response of individuals toward the infection.
+Moreover, I can see a lighter color populating the graph for pathogen
+P72. It indicates that the poplars infected P72 were suffering from
+spores with smaller sizes than the poplars infected by the other two.
+
+# The average response of the individuals toward the pathogens.
 
 As I mentioned above, I had an experimental design of poplar individuals
-spread across 5 blocks. So, now I want to see the overall response of
-the individuals regardless of the blocks. To do this, I will need to
-average individual response by dividing it with 5, which is the number
-of blocks I have.
+spread across 5 blocks. The blocks were served as repetition. For each
+of the resistance component, I wanted to average the values across 5
+blocks (or repetitions) so that I would get one value for one
+individual. Then I would plot the resistance components of the
+individuals.
 
-## For variable latent period
+## Resistance component 1: Latent period
 
 ```{r LP mean sd}
+# Some preparation
+
 # Creating the function for mean
 mean.all = function(x, Genotype){
   data.frame(aggregate(x, by = Genotype, mean, na.rm = TRUE))
@@ -309,7 +311,16 @@ LP_mean_graph = ggpubr::ggarrange(LP_mean_09, LP_mean_93, LP_mean_72)
 LP_mean_graph
 ```
 
-## For variable uredinia number
+In conjunction to the previous step, this is a clearer representative on
+poplar's behavior across pathogen types.
+
+**Latent period.** After averaging the latent period for each
+individual, I got this distribution. Individuals are placed on the
+x-axis and the mean latent period on the y-axis. Across pathogen types,
+individuals tended to start showing the first symptom between day 9 to
+11 after inoculation (i.e. exposure to pathogen).
+
+## Resistance component 2: Uredinia number
 
 ```{r UN mean sd}
 # Preparing the mean and standard deviation
@@ -415,7 +426,11 @@ UN_mean_graph = ggpubr::ggarrange(UN_mean_09, UN_mean_93, UN_mean_72)
 UN_mean_graph
 ```
 
-## For variable uredinia size
+**Uredinia number.** Once the spore started populating poplar's leaves,
+individuals infected by P72 were suffering from the largest amount of
+spore.
+
+## Resistance component 3: Uredinia size
 
 ```{r US mean sd}
 # Preparing the mean and standard deviation
@@ -522,9 +537,11 @@ US_mean_graph
 
 ```
 
-# Saving the .RData for prelim analysis step 3
+**Uredinia size.** Approaching the end of incubation period, individuals
+infected by 93JE were suffering from spore with larger sizes than the
+individuals infected by 09AX27 and P72.
 
-```{r saving RData}
+```{r saving RData for prelim 3, include=FALSE}
 save(s09AX27_clean, s93JE3_clean, sP72_clean, strain_list,
      s09AX27_loop, s93JE3_loop, sP72_loop,
      file = "prelim_step2.RData")
