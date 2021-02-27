@@ -11,18 +11,20 @@ output:
 
 # Description
 
-In my experimental dataset, I had 154 poplar individuals infected by 3 pathogens that were spanning across 5 blocks. The intention of having the blocks is for repetition and to avoid bias. Because I wanted to use this dataset to model the association between genes and resistance components, I had to average the values (of the resistance components) across 5 blocks, to get only one value for each individual.
+In my previous analysis (Exploratory Data Analysis), I averaged the resistance components across 5 blocks and plotted them. However, I did not know if blocks have effects on the distribution or not. Therefore, in this part of analysis I wanted to see if blocks have significant effects on the variation of the resistance components.
 
-# Input
+## Objectives
+
+1.  Checking the block effects using mixed-effects model
+2.  Cleaning the dataset from block effects
 
 ```{r input}
 load(file = "prelim_step2.RData")  # RData prepared from prelim analysis step 2
 ```
 
-# Libraries
-
-```{r library}
+```{r library, message=FALSE, warning=FALSE}
 library(ggplot2)  # To map the experimental design  
+library(hrbrthemes)  
 library(breedR)  # To model the source of phenotypic variation
 ```
 
@@ -85,6 +87,8 @@ UN_mix <- list() # For uredinia number
 
 US_mix <- list() # For uredinia size
 
+# Running a loop for the mixed-effects model through the length of strain_list
+
 for (i in 1:length(strain_list)) {  # For i in 1:3 (because there are 3 pathogens)
   LP_mix[[i]] <- remlf90(fixed = Laten_24.02.15_gp ~ 1,  # Mixmod for latent period
                          random = ~ Genotype + Block,
@@ -103,26 +107,28 @@ for (i in 1:length(strain_list)) {  # For i in 1:3 (because there are 3 pathogen
 summary(LP_mix[[1]])  # LP mixed model for pathogen 09AX27 (coded 1 in the strain_list)
 ```
 
-I used remlf90 from the breedR package.
+For simplicity, I will stick to latent period for individuals infected by 09AX27.
 
-How to read the results:
+For this resistance component, the model gives and intercept of 10.583. In this case, the intercept is the average latent period across genotypes and blocks.
 
--   Intercept: the average latent period
--   Variance components: the result from random effects (in this case, individuals and blocks)
--   Estimated variance: the estimated variances associated to genotype and block. To calculate the contribution of genotype to the total variance in latent period:
+```{r genot contribution}
 
-```{r genotype to total var}
 genot_var = LP_mix[[1]]$var[[1]] / (LP_mix[[1]]$var[[1]] + LP_mix[[1]]$var[[2]] +
                                       LP_mix[[1]]$var[[3]])
-
-# Est. var genotype / (est. var genotype + block + residual)
-
-genot_var
+genot_var*100
 ```
 
-So, it means that individuals contribute to 27% of the variance in latent period. I was only checking LP_mix[[1]]. This list contains the estimated variance for poplar individuals *infected with pathogen 09AX27*. So, this result only applies to the individuals infected with 09AX27. FYI, LP_mix[[2]] contains the variance for the individuals infected with 93JE3, and LP_mix[[3]] with P72.
+The model also calculates the estimated variance from genotypes and blocks. Here, it shows that genotypes (i.e. the genes of poplar individuals) contribute to 27.4% of latent period variance. Meanwhile, blocks....
 
-Then I wanted to see if individuals or blocks have significant effects. I will focus only on the resistance components latent period (LP) when the individuals are infected by pathogen 09AX27.
+```{r bloc contribution}
+
+block_var = LP_mix[[1]]$var[[2]] / (LP_mix[[1]]$var[[1]] + LP_mix[[1]]$var[[2]] +
+                                      LP_mix[[1]]$var[[3]])
+
+block_var*100
+```
+
+While blocks contribute to 3.3% of latent period variance. However, I don't know if this is a significant amount of variance to say blocks do not have a significant effect on latent period. So, now I want to check the significant effects by comparing the log-likelihood of null model and the model where genotypes or blocks are in the fixed effects.
 
 ### Checking the effects of individuals
 
@@ -153,7 +159,7 @@ sig.fun(random = random_LP_09, non_random = nonrand_LP_09, n_test = 153)
 
 ```
 
-Result: individuals have significant effects on the variance in latent period for individuals infected with pathogen 09AX27.
+Result: individuals have significant effects on the variance in latent period when they were infected with pathogen 09AX27.
 
 What about the block effects?
 
@@ -178,156 +184,87 @@ Turned out blocks do not have a significant effects on the variance in latent pe
 
 This is a good indicator for experimental trial. It is expected that individuals should have significant effects on the variance of the resistance components. Moreover, the further analysis is to detect the extent of genetics effects to the resistance components. So, the result makes sense. Furthermore, an experimental design should not introduce a systematic effect to the resistance components. Systematic effects can be from blocks or sample arrangement in the experimental design. It introduces bias to the analysis. So, the ideal result from a good experimental design is non-significant effects from blocks, like how it is shown in the result in this analysis.
 
-## Variogram of the residuals (Strain 09AX27 for all traits)
+# Adjusting the resistance components from block effects
 
-From LP_mix for strain 09AX27, residuals explain \~60% of phenotypic variance.\
-Would be good to inspect the residuals using variogram.
-
-### Latent Period
-
-```{r variogram LP 09AX27}
-variogram(LP_mix[[1]], coord = s09AX27_clean[, colnames(s09AX27_clean) %in% c("X", "Y")],
-          R = 30)
-```
-
-Seem that residuals come from environmental variation (related to the coordinates where the genotypes were placed).\
-Checking other models (UN and US).
-
-### Uredinia Number
-
-```{r UN_mix 09AX27}
-summary(UN_mix[[1]])  # UN mixmod strain 09AX27
-
-variogram(UN_mix[[1]], coord = s09AX27_clean[, colnames(s09AX27_clean) %in% c("X", "Y")], 
-          R = 30)
-```
-
-### Uredinia Size
-
-```{r US_mix 09AX27}
-summary(US_mix[[1]])  # US mixmod strain 09AX27
-
-variogram(US_mix[[1]], coord = s09AX27_clean[, colnames(s09AX27_clean) %in% c("X", "Y")], 
-          R = 30)
-```
-
-## Variogram of the residuals (Strain 93JE3 for all traits)
-
-### Latent Period
-
-```{r LP_mix 93JE3}
-summary(LP_mix[[2]])  # LP mixmod strain 93JE3
-
-variogram(LP_mix[[2]], coord = s93JE3_clean[, colnames(s93JE3_clean) %in% c("X", "Y")], 
-          R = 30)
-```
-
-### Uredinia Number
-
-```{r UN_mix 93JE3}
-summary(UN_mix[[2]])  # UN mixmod strain 93JE3
-
-variogram(UN_mix[[2]], coord = s93JE3_clean[, colnames(s93JE3_clean) %in% c("X", "Y")], 
-          R = 30)
-```
-
-### Uredinia size
-
-```{r US_mix 93JE3}
-summary(US_mix[[2]])  # US mixmod strain 93JE3
-
-variogram(US_mix[[2]], coord = s93JE3_clean[, colnames(s93JE3_clean) %in% c("X", "Y")], 
-          R = 30)
-```
-
-## Variogram of the residuals (Strain P72 for all traits)
-
-### Latent Period
-
-```{r LP_mix P72}
-summary(LP_mix[[3]])  # LP mixmod P72
-
-variogram(LP_mix[[3]], coord = sP72_clean[, colnames(sP72_clean) %in% c("X", "Y")], 
-          R = 30)
-```
-
-### Uredinia Number
-
-```{r UN_mix P72}
-summary(UN_mix[[3]])  # UN mixmod strain P72
-
-variogram(UN_mix[[3]], coord = sP72_clean[, colnames(sP72_clean) %in% c("X", "Y")], 
-          R = 30)
-```
-
-### Uredinia Size
-
-```{r US_mix P72}
-summary(US_mix[[3]])  # US mixmod strain P72
-
-variogram(US_mix[[3]], coord = sP72_clean[, colnames(sP72_clean) %in% c("X", "Y")], 
-          R = 30)
-```
-
-# Adjusting the phenotypes from block effects
-
-Because blocks are a systematic variation that affects the variation in phenotypes, we have to remove them.
+Even if the blocks do not have significant effects on the resistance components, it is still good to remove them to clean my data. The cleaned data will be used for the Genome-Wide Association Study later on.
 
 ```{r functions adj}
-# Functions for adjustment ----
-fun.coord <- function(X, Y){  # X and Y are coordinates from the dataset
+# Functions for adjustment 
+
+# Getting the plot coordinates
+fun.coord <- function(X, Y){  
   paste(X, Y, sep = "-")  # Using functions: X = dataset$X, Y = dataset$Y
 }
 
-# models: LP_mix (list of 3), UN_mix, US_mix, BP_mix
+# Models: LP_mix (list of 3), UN_mix, US_mix
 # LP_mix[[1]] = s09AX27, [[2]] = s93JE3, [[3]] sP72
+
+# Getting the intercept from the model
 intercept <- function(mix){  # mix being the name of model
     mix$fixed$Intercept[[1]][1, "value"]  # Example, mix = LP_mix[[1]]
 }
 
-BLUP.genot <- function(mix, x){  # x being the name of data frame object
+
+# Getting the variance associated to each individual
+BLUP.genot <- function(mix, x){  # x being the name of a data frame object
   merge(x, data.frame("Genotype" = rownames(mix$ranef$Genotype[[1]]),
                       "BLUP_Genotype" = mix$ranef$Genotype[[1]]$value),
         by = "Genotype")
 }
 
+# Getting the variance associated to each block
 BLUP.block <- function(mix, x){
   merge(x, data.frame("Block" = rownames(mix$ranef$Block[[1]]),
                       "BLUP¨.block" = mix$ranef$Block[[1]]$value),
         by = "Block")
 }
 
-
+# Getting the residual variance
 BLUP.resid <- function(data, clean, mix){  # clean and data being the name of data frame object
   merge(data, data.frame("coord" = fun.coord(clean$X, clean$Y),
                       "BLUP_resid" = residuals(mix)),
         by = "coord")
 }
 
+# Getting the adjusted value
 adj <- function(x){  # x being the name of data frame object
   x$intercept + x$BLUP_Genotype + x$BLUP_resid
 }
 ```
 
-## Adjusting LP
+## Adjusting latent period
 
 ```{r adj LP}
-adj_LP <- list(s09AX27_clean[, -c(6:15)],  # creating a list of dataframe to store loop result
+# Creating a list of dataframe to store the results
+adj_LP <- list(s09AX27_clean[, -c(6:15)],  
                s93JE3_clean[, -c(6:15)],
                sP72_clean[, -c(6:15)])
 
-for (x in 1:length(adj_LP)){  # x in data frame 1 - 3
+for (x in 1:length(adj_LP)){
   adj_LP[[x]]$coord <- fun.coord(X = adj_LP[[x]]$X, Y = adj_LP[[x]]$Y)  # adding coordinates to data frame x
+  
   adj_LP[[x]]$intercept <- intercept(mix = LP_mix[[x]])  # adding intercept extracted from mixmodel
+  
   adj_LP[[x]] <- BLUP.genot(mix = LP_mix[[x]], x = adj_LP[[x]])  # adding BLUP estimates extracted from mixmodel
+  
   adj_LP[[x]] <- BLUP.block(mix = LP_mix[[x]], x= adj_LP[[x]])
+  
   adj_LP[[x]] <- BLUP.resid(data = adj_LP[[x]], clean = adj_LP[[x]],  # adding residuals extracted from mixmodel
                              mix = LP_mix[[x]])
+  
   adj_LP[[x]]$adj_LP <- adj(x = adj_LP[[x]])  # adjusting LP by removing block estimates
 }
 ```
 
-## Adjusting UN
+Here is the snapshot of the adjusted (i.e. cleaned) latent period dataset for individuals infected by pathogen 09AX27
+
+```{r adj_LP 09AX27}
+head(adj_LP[[1]], n = 5)
+```
+
+Other individuals infected by pathogen 93JE3 and P72 have the same kind of dataset.
+
+## Adjusting uredinia number
 
 ```{r adj UN}
 adj_UN <- list(s09AX27_clean[, -c(6:15)],
@@ -336,15 +273,27 @@ adj_UN <- list(s09AX27_clean[, -c(6:15)],
 
 for (x in 1:length(adj_UN)){
   adj_UN[[x]]$coord <- fun.coord(adj_UN[[x]]$X, adj_UN[[x]]$Y)
+  
   adj_UN[[x]]$intercept <- intercept(mix = UN_mix[[x]])
+  
   adj_UN[[x]] <- BLUP.genot(UN_mix[[x]], adj_UN[[x]])
+  
   adj_UN[[x]] <- BLUP.block(UN_mix[[x]], adj_UN[[x]])
-  adj_UN[[x]] <- BLUP.resid(data = adj_UN[[x]], clean = adj_UN[[x]], mix = UN_mix[[x]])
+  
+  adj_UN[[x]] <- BLUP.resid(data = adj_UN[[x]], clean = adj_UN[[x]],
+                            mix = UN_mix[[x]])
+  
   adj_UN[[x]]$adj_UN <- adj(adj_UN[[x]])
 }
 ```
 
-## Adjusting US
+Here is the snapshot of the adjusted (i.e. cleaned) uredinia number dataset for individuals infected by pathogen 09AX27
+
+```{r adj_UN 09AX27}
+head(adj_UN[[1]], n = 5)
+```
+
+## Adjusting uredinia size
 
 ```{r adj US}
 adj_US <- list(s09AX27_clean[, -c(6:15)],
@@ -353,69 +302,206 @@ adj_US <- list(s09AX27_clean[, -c(6:15)],
 
 for (x in 1:length(adj_US)){
   adj_US[[x]]$coord <- fun.coord(adj_US[[x]]$X, adj_US[[x]]$Y)
+  
   adj_US[[x]]$intercept <- intercept(mix = US_mix[[x]])
+  
   adj_US[[x]] <- BLUP.genot(US_mix[[x]], adj_US[[x]])
+  
   adj_US[[x]] <- BLUP.block(US_mix[[x]], adj_US[[x]])
-  adj_US[[x]] <- BLUP.resid(data = adj_US[[x]], clean = adj_US[[x]], mix = US_mix[[x]])
+  
+  adj_US[[x]] <- BLUP.resid(data = adj_US[[x]], clean = adj_US[[x]],
+                            mix = US_mix[[x]])
+  
   adj_US[[x]]$adj_US <- adj(adj_US[[x]])
 }
 ```
 
-## Extracting the adjusted traits
+Here is the snapshot of the adjusted (i.e. cleaned) uredinia size dataset for individuals infected by pathogen 09AX27
+
+```{r adj_US 09AX27}
+head(adj_US[[1]], n = 5)
+```
+
+## Averaging the adjusted resistance components
 
 ```{r head 09AX27}
 # Strain 09AX27
 adj_s09AX27 <- s09AX27_clean[, -c(6:15)]
+
 adj_s09AX27$Latence <- adj_LP[[1]]$adj_LP
 adj_s09AX27$NbSS <- adj_UN[[1]]$adj_UN
 adj_s09AX27$Taille <- adj_US[[1]]$adj_US
 
-head(adj_s09AX27)  # preview of the dataset
+# Strain 93JE3
+adj_s93JE3 <- s93JE3_clean[, -c(6:15)]
 
-par(mfrow = c(2,2))  
-hist(adj_s09AX27$Latence)  # distribution of the adjusted traits
-hist(adj_s09AX27$NbSS)
-hist(adj_s09AX27$Taille)
+adj_s93JE3$Latence <- adj_LP[[2]]$adj_LP
+adj_s93JE3$NbSS <- adj_UN[[2]]$adj_UN
+adj_s93JE3$Taille <- adj_US[[2]]$adj_US
+
+# Strain P72
+adj_sP72 <- sP72_clean[, -c(6:15)]
+
+adj_sP72$Latence <- adj_LP[[3]]$adj_LP
+adj_sP72$NbSS <- adj_UN[[3]]$adj_UN
+adj_sP72$Taille <- adj_US[[3]]$adj_US
 ```
 
+There are still information about blocks. I have to average the values of the
+resistance components across blocks. 
+
+```{r average}
+# I have to remove 5 individuals that do not have their corresponding SNPs
+# 6-J32, KUH-33, KUH-34, NL-1210, SSC
+missing = c("6-J32", "KUH-33", "KUH-34", "NL-1210", "SSC")
+
+# Function to remove the missing individuals
+trait.clean = function(data){
+  subset(data,!(Genotype %in% missing))
+}
+
+trait_list = list(adj_s09AX27, adj_s93JE3, adj_sP72)
+
+# Loop to remove the missing individuals
+for (i in 1:length(trait_list)) {
+  trait_list[[i]] = trait.clean(trait_list[[i]])
+}
+
+# Coercing the block in pathogen
+for (i in 1:length(trait_list)) {
+  trait_list[[i]]$Block = as.factor(trait_list[[i]]$Block)
+}
+
+# Function for averaging the resistance components
+mean.all = function(x, Genotype){
+  aggregate(x, by = Genotype, mean, na.rm = TRUE)
+}
+
+# Lists to store the averaged values
+mean_latence = list()
+mean_NbSS = list()
+mean_taille = list()
+
+# Loop to calculate the averaged values
+for (i in 1:length(trait_list)) {
+  mean_latence[[i]] = mean.all(trait_list[[i]]$Latence,
+                               list(trait_list[[i]]$Genotype))  # Latent period
+  
+  mean_NbSS[[i]] = mean.all(trait_list[[i]]$NbSS,
+                             list(trait_list[[i]]$Genotype))  # Uredinia number
+  
+  mean_taille[[i]] = mean.all(trait_list[[i]]$Taille,
+                               list(trait_list[[i]]$Genotype))  # Uredinia size
+}
+
+# [[1]] = 09AX27, [[2]] = 93JE3, [[3]] = P72
+```
+
+## Extracting the adjusted resistance components
+
+Here is a snapshot for a cleaned dataset of the resistance components.
+Group = pathogen 09AX27
+
+```{r extract}
+GWAS_09AX27 = data.frame("Trait" = mean_latence[[1]]$Group.1,
+                          "mean_Latence" = mean_latence[[1]]$x,
+                          "mean_NbSS" = mean_NbSS[[1]]$x,
+                          "mean_Taille" = mean_taille[[1]]$x)
+head(GWAS_09AX27, n = 5)
+```
+
+Group = pathogen 93JE3
+
+```{r extract 93JE3}
+GWAS_93JE3 = data.frame("Trait" = mean_latence[[2]]$Group.1,
+                         "mean_Latence" = mean_latence[[2]]$x,
+                         "mean_NbSS" = mean_NbSS[[2]]$x,
+                         "mean_Taille" = mean_taille[[2]]$x)
+
+head(GWAS_93JE3, n = 5)
+```
+
+Group = pathogen P72
+
+```{r extract P72}
+GWAS_P72 <- data.frame("Trait" = mean_latence[[3]]$Group.1,
+                       "mean_Latence" = mean_latence[[3]]$x,
+                       "mean_NbSS" = mean_NbSS[[3]]$x,
+                       "mean_Taille" = mean_taille[[3]]$x)
+
+head(GWAS_P72, n = 5)
+```
+
+## Plotting the averaged values (Resistance component: Latent period)
+
+And here is the final distribution of latent period. It is in line with the
+intial insights that I gathered from the raw distribution, but even clearer now.
+
+Here, I see that most individuals infected by 09AX27 started showing the first
+symptom in much later days than the individuals infected by 93JE3 and P72.
+
+Given that the incubation period was 14 days, the information from latent period
+gives me the idea that the poplars could resist the population of pathogen 09AX27
+much better than the population of pathogen 93JE3 and P72. This situation applied
+at least at the beginning of the incubation period.
+
+```{r ggplot 09AX27, message=FALSE, warning=FALSE}
+gg = function(data, x, bin){
+  ggplot(data, aes(x)) +
+    geom_histogram(binwidth = bin, color = "white", fill = "darkblue") +
+    geom_vline(aes(xintercept = mean(x)), color = "red",
+               linetype = "dashed", size = 1)
+}
+
+gg_LP_09AX27 = gg(data = GWAS_09AX27, x = GWAS_09AX27$mean_Latence,
+                   bin = 0.4) +
+  xlab("Latent Period (days)") +
+  ylab("Counts of individuals") +
+  scale_x_continuous(limits = c(7,14)) +
+  scale_y_continuous(limits = c(0,70)) +
+  labs(title = "Mean latent period", subtitle = "Pathogen = 09AX27") +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_LP_93JE3 = gg(data = GWAS_93JE3, x = GWAS_93JE3$mean_Latence,
+                 bin = 0.4) +
+  xlab("Latent Period (days)") +
+  ylab("Counts of individuals") +
+  scale_x_continuous(limits = c(7,14)) +
+  scale_y_continuous(limits = c(0,70)) +
+  labs(subtitle = "Pathogen = 93JE3") +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_LP_P72 = gg(data = GWAS_P72, x = GWAS_P72$mean_Latence,
+               bin = 0.4) +
+  xlab("Latent Period (days)") +
+  ylab("Counts of individuals") +
+  scale_x_continuous(limits = c(7,14)) +
+  scale_y_continuous(limits = c(0,70)) +
+  labs(subtitle = "Pathogen = P72") +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+# Combining the figures
+LP_mean = ggpubr::ggarrange(gg_LP_09AX27, gg_LP_93JE3, gg_LP_P72)
+
+LP_mean
+```
+
+
+# BOOKMARK
 ```{r extract 09AX27, eval=FALSE, message=FALSE, warning=FALSE}
 write.table(adj_s09AX27, "adj_traits_s09AX27.txt", sep = "\t", na = "NA", 
             quote = FALSE, row.names = FALSE)
 ```
 
-```{r head 93JE3}
-# Strain 93JE3
-adj_s93JE3 <- s93JE3_clean[, -c(6:15)]
-adj_s93JE3$Latence <- adj_LP[[2]]$adj_LP
-adj_s93JE3$NbSS <- adj_UN[[2]]$adj_UN
-adj_s93JE3$Taille <- adj_US[[2]]$adj_US
-
-head(adj_s93JE3)
-
-par(mfrow = c(2,2)) 
-hist(adj_s93JE3$Latence)
-hist(adj_s93JE3$NbSS)
-hist(adj_s93JE3$Taille)
-```
-
 ```{r extract 93JE3, message=FALSE, warning=FALSE, eval=FALSE}
 write.table(adj_s93JE3, "adj_traits_s93JE3.txt", sep = "\t", na = "NA", 
             quote = FALSE, row.names = FALSE)
-```
-
-```{r head P72}
-# Strain P72
-adj_sP72 <- sP72_clean[, -c(6:15)]
-adj_sP72$Latence <- adj_LP[[3]]$adj_LP
-adj_sP72$NbSS <- adj_UN[[3]]$adj_UN
-adj_sP72$Taille <- adj_US[[3]]$adj_US
-
-head(adj_sP72)
-
-par(mfrow = c(2,2)) 
-hist(adj_sP72$Latence)
-hist(adj_sP72$NbSS)
-hist(adj_sP72$Taille)
 ```
 
 ```{r extract P72, eval=FALSE, message=FALSE, warning=FALSE}
