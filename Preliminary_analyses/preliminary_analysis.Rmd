@@ -1,12 +1,13 @@
 ---
-title: "EDA part 1"
-subtitle: "First step of EDA, details below"
+title: "Poplar's behaviors toward different rust types"
 author: "Firza Riany"
 date: "8/17/2020"
 output: 
   html_document:
     toc: TRUE
-    number_sections: TRUE
+    toc_float: TRUE
+    code_folding: hide
+    theme: cosmo
 editor_options: 
   markdown: 
     wrap: 72
@@ -18,9 +19,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Description.
 
-The general aim of the following study was to find the genetic potential
-of black poplar's resistance (*Populus nigra*) when they are infected by
-rust.
+The general aim of the study was to find the genetic potential of black
+poplar's resistance (*Populus nigra*) when they are infected by rust
+fungi.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE, out.width="30%"}
 library(jpeg)
@@ -34,7 +35,8 @@ rust. The picture on the left is an overall infection, and the picture
 on the right is a zoomed visualization.
 
 Before proceeding to a more sophisticated modeling, I conducted an
-Exploratory Data Analysis (EDA) to gather insights from the dataset.
+Exploratory Data Analysis (EDA) to gather the initial insights from the
+dataset.
 
 ------------------------------------------------------------------------
 
@@ -48,16 +50,16 @@ The variables needed in the analysis were:\
 - **Number of spores, coded as NbSS**\
 \_ **Size of spores, coded as Taiil**
 
-These are the indication of infection on poplar leaves.
+Together, they are called "resistance components".
 
 The spesies is black poplar (*Populus nigra*) that was collected from
 several natural populations and sources in Western Europe.
 
 **Experimental design**
 
-The experimental design was as follow: 168 individuals (including the
-discriminants) spread across 5 blocks were inoculated with 3 rust
-strains. These make up a total 2520 observations of 15 variables.
+The experimental design was as follow: 154 poplar individuals spread
+across 5 blocks were infected with 3 rust types. These make up a total
+2520 observations of 15 variables.
 
 Note. not all variables are going to be used, we will see as we proceed
 through this script.
@@ -67,27 +69,32 @@ The objectives of this first step of prelim analysis were:
 ## Objectives.
 
 1.  Check the resistant vs susceptible individuals.\
-2.  Understand the global distribution of each phenotype.\
-3.  Understand the variability in distribution of the phenotypes for
-    each strain.
+2.  Understand the global distribution of the resistance components.\
+3.  Understand the variability in the resistance components between the
+    rust types.
 
 # Preparation (libraries, working directory, data set).
 
 ```{r preparation, message=FALSE, warning=FALSE}
 # Libraries
-library(plyr)  # to create a frequency table of resistant vs susceptible individuals
-library(naniar)  # to replace values with NA
-library(ggplot2)  # to make graphs
-library(ggpubr)  # to arrange ggplot graphs in columns and rows
+library(plyr)  # Create a frequency table of resistant vs susceptible individuals
+library(naniar)  # Replace values with NA
+library(ggplot2)  # Make graphs
+library(ggpubr)  # Arrange ggplot graphs in columns and rows
 
 # Loading the raw data set ----
 rust_test1 = read.delim2("B4est_test1_LectureJ13_J14_commented.txt", na = "NA")
 
-head(rust_test1)
-
 # Selection of columns ----
 test1_selec = rust_test1[ ,-c(12, 13, 15)]  # getting only the columns that we need
+```
 
+In the raw dataset I had 15 variables. I did not need all these 15
+variables, so for simplicity, I selected only the variables that I
+needed. The preview of the first 5 observation in the dataset with the
+variables I needed is shown below:
+
+```{r dataset of the selected variables}
 head(test1_selec)
 ```
 
@@ -102,11 +109,7 @@ the pathogen, thus do not have symptoms.*
 *Susceptible individuals are the individuals that are interacting with
 the pathogen, thus causing symptoms.*
 
-The checking was carried out after excluding the control individuals.
-
-## Pathogen 09AX27
-
-```{r compatibility 09AX27}
+```{r res_vs_sus 09AX27}
 # Subsetting the raw dataset by pathogen
 
 test1_09AX27 = test1_selec[which(test1_selec$Strain == "09AX27"),]
@@ -119,6 +122,8 @@ discrim = read.table("Tab_discrim_vir.txt",
                       header = TRUE,
                       row.names = NULL)
 
+# Pathogen 09AX27
+
 # Create a new column to differentiate normal individuals from control
 
 test1_09AX27[ ,13] = "NA"
@@ -126,6 +131,7 @@ test1_09AX27[ ,13] = "NA"
 for (i in c(1:nrow(test1_09AX27))){
   if(test1_09AX27$Genotype[i] %in% discrim$Discrim)  # if the genotype name in 09AX27 is the same as those in discrim names in discriminant file
     test1_09AX27[i,13] = "discrim"  # then print discrim in each row of column 13
+  
   if(test1_09AX27$Genotype[i] == "Robusta")  # if the genotype name is robusta
     test1_09AX27[i,13] = "control"  # then print control in each row of column 13
 }
@@ -136,6 +142,8 @@ test1_09AX27_nodisc = test1_09AX27[-which(test1_09AX27[ ,13] %in%
                                              c("control", "discrim")), ]
 
 names(test1_09AX27_nodisc)[13] = "Res_vs_sus"
+
+# -5 is a code for "non-measurable" observation, meaning that the individual did not show symptoms at all
 
 for (i in c(1:nrow(test1_09AX27_nodisc))) {
   if(test1_09AX27_nodisc$Laten_24.02.15_gp[i] == -5)
@@ -162,9 +170,9 @@ resist_09AX27 = ggplot(test1_09AX27_nodisc, aes(x = Res_vs_sus)) +
         legend.position = "none")
 ```
 
-## Strain 93JE3
+```{r res_vs_sus 93JE3}
+# Pathogen 09AX27
 
-```{r compatibility 93JE3}
 # Create a new column to differentiate normal individuals from discriminants 
 # and control (subject for inspection)
 
@@ -173,8 +181,10 @@ resist_09AX27 = ggplot(test1_09AX27_nodisc, aes(x = Res_vs_sus)) +
 test1_93JE3[ ,13] = "NA"
 
 for (i in c(1:nrow(test1_93JE3))){
+  
   if(test1_93JE3$Genotype[i] %in% discrim$Discrim)
     test1_93JE3[i,13] = "discrim"
+  
   if(test1_93JE3$Genotype[i] == "Robusta")
     test1_93JE3[i,13] = "control"
 }
@@ -188,8 +198,10 @@ test1_93JE3_nodisc = test1_93JE3[-which(test1_93JE3[ ,13] %in%
 names(test1_93JE3_nodisc)[13] = "Res_vs_sus"
 
 for (i in c(1:nrow(test1_93JE3_nodisc))) {
+  
   if(test1_93JE3_nodisc$Laten_24.02.15_gp[i] == -5)
     test1_93JE3_nodisc[i,13] = "Resistant"
+  
   
   if(test1_93JE3_nodisc$Laten_24.02.15_gp[i] != -5)
     test1_93JE3_nodisc[i,13] = "Susceptible"
@@ -212,18 +224,21 @@ resist_93JE3 = ggplot(test1_93JE3_nodisc, aes(x = Res_vs_sus)) +
         legend.position = "none")
 ```
 
-## Strain P72
+```{r res_vs_sus P72}
+# Pathogen 09AX27
 
-```{r compatibility P72}
 # Create a new column to differentiate normal individuals from discriminants
 # and control (subject for inspection)
 
 # From control (Genotype == Robusta) and discriminants (Genotype == discrim$Discrim)
 
 test1_P72[ ,13] = "NA"
+
 for (i in c(1:nrow(test1_P72))){
+  
   if(test1_P72$Genotype[i] %in% discrim$Discrim)
     test1_P72[i,13] = "discrim"
+  
   if(test1_P72$Genotype[i] == "Robusta")
     test1_P72[i,13] = "control"
 }
@@ -237,6 +252,7 @@ test1_P72_nodisc = test1_P72[-which(test1_P72[ ,13] %in%
 names(test1_P72_nodisc)[13] = "Res_vs_sus"
 
 for (i in c(1:nrow(test1_P72_nodisc))) {
+  
   if(test1_P72_nodisc$Laten_24.02.15_gp[i] == -5)
     test1_P72_nodisc[i,13] = "Resistant"
   
@@ -268,13 +284,13 @@ res_vs_sus
 ```
 
 Note resistant and susceptible are referring to poplar's responses. The
-rust id on the top shows the type of pathogen that infected the poplar.
-This graph shows the share of resistant and susceptible poplars when
-they were infected with different pathogen types. The poplars were
-behaving quite similarly. There were around 700 susceptible poplars.
-These are the poplars that I studied to see whether they were behaving
-differently or not. Also, whether they had the chance to fight the
-pathogen.
+pathogen type on the top of each figure shows the type of pathogen that
+infected the poplars. This graph shows the share of resistant and
+susceptible poplars when they were infected with different pathogen
+types. The poplars were behaving quite similarly. There were around 700
+susceptible poplars. The susceptible ones are the poplars that I would
+study to see whether they were behaving differently from each other.
+Also, whether they had the chance to fight the pathogen.
 
 Strictly speaking, it is rather tricky to say that these 700 poplars
 were susceptible. It is more effective to say that these 700 poplars
@@ -305,22 +321,23 @@ incomp_P72 = plyr::count(test1_P72_nodisc$Genotype[
 
 common_resist = data.frame(intersect(incomp_09AX27$x, incomp_93JE3$x))
 
-common_final = data.frame(intersect(common_resist$intersect.incomp_09AX27.x..incomp_93JE3.x.,
-                                    incomp_P72$x))
+common_final = data.frame(intersect(common_resist$intersect.incomp_09AX27.x..incomp_93JE3.x., incomp_P72$x))
 
 names(common_final)[1] = "resistant across the pathogens"
 
 common_final
-
 ```
 
 Turned out three poplar individuals were completely resistant across all
 the pathogens. It means that they were completely not interacting with
 the pathogens. Pathogens' activities were indifferent to them.
 
-# Graphical distribution of the variables for each pathogen
+# Graphical distribution of the resistance components
 
-In this step, I want to see the distribution of the variables.
+After inspecting which individuals that were resistant and which were
+susceptible, I wanted to look into my data as a whole. So, before
+continuing to data cleaning and EDA, I wanted to see the overall
+distribution of my dataset.
 
 ```{r global dist prep}
 # Some preparation
@@ -357,8 +374,10 @@ test1_selec_NA$PtN_real = replace(test1_selec_NA$PtN_real,
 test1_selec_NA[ ,15] = "NA"
 
 for (i in c(1:nrow(test1_selec_NA))){
+  
   if(test1_selec_NA$Genotype[i] %in% discrim$Discrim)
     test1_selec_NA[i,15] = "discrim"
+  
   if(test1_selec_NA$Genotype[i] == "Robusta")
     test1_selec_NA[i,15] = "control"
 }
@@ -372,29 +391,54 @@ par(mfrow = c(2,2))
 
 test1_loop = data.frame("LP" = test1_NA_nodisc$Laten_24.02.15_gp,
                          "UN" = test1_NA_nodisc$total_NbSS,
-                         "US" = test1_NA_nodisc$Taill_05.08.20_gp,
-                         "Black_Points" = test1_NA_nodisc$PtN_real)
-loop.vector = 1:4
+                         "US" = test1_NA_nodisc$Taill_05.08.20_gp)
+
+names(test1_loop)[1:3] = c("Latent Period", "Uredinia Number", "Uredinia Size")
+
+loop.vector = 1:3
 
 for (i in loop.vector){
   x = test1_loop[,i]
   title = names(test1_loop[i])
   hist(x,
        main = title,
-       xlab = i)
+       xlab = "Scores")
 }
 ```
 
-# Graphical distribution of the variables for each pathogen
+**Latent period.** By definition, it is the time needed for the
+individuals to start showing the first symptoms of infection. When
+poplars were infected with rust, the symptom would be yellow spores that
+are populating poplar's leaves. In my study, most poplars started having
+this symptom on the 9th, 10th, and 11th day after inoculation (i.e.
+exposure to the pathogen).
 
-So I see that latent period (LP) and uredinia number (UN) are skewed to
-the left, while uredinia size (US) was discrete. I will know what
-happens to these in\
-future analysis.
+**Uredinia number**. By definition, it is the number of spores that are
+populating the poplar's leaves. On the day 14 after inoculation, I
+counted the uredinia number. Most poplars had 1 - 40 spores on their
+leaves by this day.
 
-Now I want to cross check the previous distribution (that was not
+**Uredinia size**. By definition, it is the size of the spores that are
+populating the poplar's leaves. On the day 14, I evaluated the uredinia
+size by scoring it. The score goes from 1 (the smallest) to 5 (the
+largest). In my study, most poplars had spores with sizes scored 3 - 4.
+
+Note that in this part I just summarized the distribution of the
+resistance components from my dataset as a whole.
+
+Remember that I had 5 blocks which served as repetitions to avoid bias.
+In this section, I acknowledged the individuals in 5 blocks as different
+individuals. The idea was to see how they were behaving in general and
+what distribution I could expect from my data. However, after I clean
+the data, I would get one value averaged across 5 blocks for an
+individual's resistance components.
+
+# Graphical distribution of the resistance components depending on the pathogen types
+
+Now I want to crosscheck the previous distribution (that was not
 considering the different pathogens I used) with the following
 distribution where I sparse the distribution based on the pathogens.
+Will the resistance components have the same distribution as before?
 
 ```{r data prep}
 ## Subsetting the clean dataset based on pathogen
@@ -462,7 +506,28 @@ for (i in loop.vector){
 When I sparse the distribution of each variable based on the pathogens,
 the variables still follow the similar pattern as the previous one
 (without sparsing based on the pathogens). So probably it is a normal
-pattern in the interaction between poplars and their pathogen.
+pattern in the interaction between poplars and rust fungus.
+
+If I have to point at the differences in poplar's resistance across
+pathogen types...
+
+**Latent period**. Poplars that were infected by 93JE3 and P72 started
+showing symptoms in much earlier days than the poplars infected by
+09AX27
+
+**Uredinia number**. Poplars that were infected by 93JE3 and P72 were
+populated with more spores than in poplars infected by 09AX27\*
+
+**Uredinia size**. The spore size in the poplars infected by P72 had the
+smallest size (score = 3).
+
+**Bottom line**. The key takeaway from this analysis is poplars could
+resist the population of the spores from pathogen 09AX27. When the
+poplar leaves were populated by spores, poplar could still resist the
+spore population from pathogen 09AX27, but not from 93JE3 and P72.
+Approaching day 14 (the end of observation), poplars could not resist
+the growth of pathogen 09AX27 anymore, but could resist the growth of
+pathogen 93JE3, and especially pathogen P72.
 
 ```{r eval=FALSE, include=FALSE}
 # Saving the Rdata for prelim analysis step 2
@@ -470,6 +535,5 @@ pattern in the interaction between poplars and their pathogen.
 save(test1_selec_NA, test1_NA_nodisc,
      s09AX27_clean, s93JE3_clean, sP72_clean,
      s09AX27_loop, s93JE3_loop, sP72_loop,
-     s09AX27_means, s93JE3_means, sP72_means,
-     file = "rdata_prelim_2.RData")
+     file = "prelim_step1.RData")
 ```
