@@ -1,5 +1,7 @@
 # Quantitative Genetics: Identifying the key genes that control resistance
 
+## Documentation: https://firzaariany.github.io/quantitative_genetics/
+
 ## 🧇 Brief Description
 
 My study focuses on *Populus nigra* species, or in a common name called black poplar.
