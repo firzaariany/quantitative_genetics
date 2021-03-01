@@ -66,7 +66,7 @@ through this script.
 
 The objectives of this first step of prelim analysis were:
 
-## Objectives.
+## Objectives
 
 1.  Check the resistant vs susceptible individuals.\
 2.  Understand the global distribution of the resistance components.\

@@ -21,7 +21,7 @@ each block was infected by 3 pathogens. I collected 3 variables: latent
 period (LP), uredinia number (UN), and uredinia size (US) to observe
 poplar's resistance.
 
-# Objectives
+## Objectives
 
 1.  Graphical illustration of experimental design.\
 2.  The overall response of individuals toward the infection.
