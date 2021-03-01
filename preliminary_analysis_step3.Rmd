@@ -1,16 +1,11 @@
 ---
 title: "Data cleaning before modelling"
-knit: (function(input_file, encoding) {
-  out_dir <- 'docs';
-  rmarkdown::render(input_file,
-  encoding=encoding,
-  output_file=file.path(dirname(input_file), out_dir, 'preparation_gwas.html'))})
 output: 
   html_document:
     toc: TRUE
     toc_float: TRUE
+    collapsed: FALSE
     code_folding: hide
-    theme: cosmo
 ---
 
 # Description

@@ -1,0 +1,13 @@
+name: "Quantitative genetics"
+output_dir: "docs"
+navbar:
+  title: "Quantitative genetics"
+  left:
+  - text: "Home"
+    href: index.html
+  - text: "Exploratory data analysis"
+    href: EDA.html
+  - text: "Data cleaning"
+    href: preparation_gwas.html
+output:
+  html_document:

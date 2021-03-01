@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Data cleaning before modelling</title>
+
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Quantitative genetics</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="EDA.html">Exploratory data analysis</a>
+</li>
+<li>
+  <a href="preparation_gwas.html">Data cleaning</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Data cleaning before modelling</h1>
+
+</div>
+
+
+<div id="description" class="section level1">
+<h1>Description</h1>
+<p>In my previous analysis (Exploratory Data Analysis), I averaged the resistance components across 5 blocks and plotted them. However, I did not know if blocks have effects on the distribution or not. Therefore, in this part of analysis I wanted to see if blocks have significant effects on the variation of the resistance components.</p>
+<div id="objectives" class="section level2">
+<h2>Objectives</h2>
+<ol style="list-style-type: decimal">
+<li>Checking the block effects using mixed-effects model</li>
+<li>Cleaning the dataset from block effects</li>
+</ol>
+<pre class="r"><code>load(file = &quot;prelim_step2.RData&quot;)  # RData prepared from prelim analysis step 2</code></pre>
+<pre class="r"><code>library(ggplot2)  # To map the experimental design  
+library(hrbrthemes)  
+library(breedR)  # To model the source of phenotypic variation</code></pre>
+</div>
+</div>
+<div id="observing-block-effects-using-mixed-effects-model" class="section level1">
+<h1>Observing block effects using mixed-effects model</h1>
+<p>I used mixed-effects model to analyze the effects of block and individuals to the variance of the resistance components. Mixed-effects model is a regular model used in animal and plant breeding. There are two parts in the mixed-effects model:</p>
+<ul>
+<li><p>Fixed part: The factor/variable whose effect is directly affecting the variance of the response variable and whose effect that we would like to test the hypothesis with. In a simple term, I would say this is “a direct variable that affects our test”</p></li>
+<li><p>Random part: The factors/variables whose effects are indirectly affecting the variance of response variable and whose effects that we would not consider to test our hypothesis. In a simple term, I would say this is “an indirect or background variable that can affect the variance of our response variable”</p></li>
+</ul>
+<p>In this section, I wanted to adjust the values of my resistance components. In a simple word, I wanted to <strong>eliminate block effects from the values of my resistance components</strong>.</p>
+<ul>
+<li><p>To do that, I used the resistance components as the response variables.</p></li>
+<li><p>I fitted the resistance components to the fixed part of the model so that the model could find the average of the values of the resistance components in the form of an intercept.</p></li>
+<li><p>I fitted the genotype and block as random effects because I considered them as the background effects that affect the variance in my resistance components.</p></li>
+</ul>
+<hr />
+<p>To check the significant effects of the individuals I did the following:</p>
+<ul>
+<li><p>Made a null model where neither the individuals nor the blocks were fitted to the fixed part (the procedures above are the procedures to make a null model)</p></li>
+<li><p>Made a model where individuals were fitted to the fixed part (genotype_fit)</p></li>
+<li><p>Used chi-square test of the log likelihood between the null model and genotype_fit</p></li>
+<li><p>If the test return a value below 0.05, it means that individuals have a significant effect on the variance in the resistance components</p></li>
+<li><p>If the test return a value above 0.05, it means that individuals do not have a significant effect.</p></li>
+</ul>
+<hr />
+<p>To check the significant effects of the blocks, I will do the following:</p>
+<ul>
+<li><p>A null model</p></li>
+<li><p>A model where blocks were fitted to the fixed part (block_fit)</p></li>
+<li><p>Used chi-square test of the log likelihood between the null model and block_fit</p></li>
+<li><p>If the test return a value below 0.05, it means that blocks have a significant effect on the variance in the resistance components</p></li>
+<li><p>If the test return a value above 0.05, it means that blocks do not have a significant effect.</p></li>
+</ul>
+<pre class="r"><code># strain_list &lt;- strain_list &lt;- list(s09AX27_clean, s93JE3_clean, sP72_clean) 
+# List: strain_list, 1 = 09AX27, 2 = 93JE3, 3 = P72
+# strain_list is available in prelim analysis step 2, already saved as .RData
+
+# I will run the model in a loop
+
+# First, creating an empty list for each of the resistance components
+
+LP_mix &lt;- list()  # For latent period
+
+UN_mix &lt;- list() # For uredinia number
+
+US_mix &lt;- list() # For uredinia size
+
+# Running a loop for the mixed-effects model through the length of strain_list
+
+for (i in 1:length(strain_list)) {  # For i in 1:3 (because there are 3 pathogens)
+  LP_mix[[i]] &lt;- remlf90(fixed = Laten_24.02.15_gp ~ 1,  # Mixmod for latent period
+                         random = ~ Genotype + Block,
+                         data = strain_list[[i]], # For pathogen 1, then 2, then 3
+                         method = &quot;ai&quot;)
+  UN_mix[[i]] &lt;- remlf90(fixed = total_NbSS ~ 1,  # Mixmod for uredinia number
+                         random = ~ Genotype + Block,
+                         data = strain_list[[i]],
+                         method = &quot;ai&quot;)
+  US_mix[[i]] &lt;- remlf90(fixed = Taill_05.08.20_gp ~ 1, # Mixmod for uredinia size
+                         random = ~ Genotype + Block,
+                         data = strain_list[[i]],
+                         method = &quot;ai&quot;)
+}
+
+summary(LP_mix[[1]])  # LP mixed model for pathogen 09AX27 (coded 1 in the strain_list)</code></pre>
+<pre><code>## Formula: Laten_24.02.15_gp ~ 0 + Intercept + Genotype + Block 
+##    Data: strain_list[[i]] 
+##   AIC  BIC logLik
+##  2338 2352  -1166
+## 
+## Parameters of special components:
+## 
+## 
+## Variance components:
+##          Estimated variances    S.E.
+## Genotype             0.41226 0.07720
+## Block                0.04908 0.04031
+## Residual             1.04160 0.06471
+## 
+## Fixed effects:
+##            value   s.e.
+## Intercept 10.583 0.1186</code></pre>
+<p>For simplicity, I will stick to latent period for individuals infected by 09AX27.</p>
+<p>For this resistance component, the model gives and intercept of 10.583. In this case, the intercept is the average latent period across genotypes and blocks.</p>
+<pre class="r"><code>genot_var = LP_mix[[1]]$var[[1]] / (LP_mix[[1]]$var[[1]] + LP_mix[[1]]$var[[2]] +
+                                      LP_mix[[1]]$var[[3]])
+genot_var*100</code></pre>
+<pre><code>## [1] 27.43022</code></pre>
+<p>The model also calculates the estimated variance from genotypes and blocks. Here, it shows that genotypes (i.e. the genes of poplar individuals) contribute to 27.4% of latent period variance. Meanwhile, blocks….</p>
+<pre class="r"><code>block_var = LP_mix[[1]]$var[[2]] / (LP_mix[[1]]$var[[1]] + LP_mix[[1]]$var[[2]] +
+                                      LP_mix[[1]]$var[[3]])
+
+block_var*100</code></pre>
+<pre><code>## [1] 3.265664</code></pre>
+<p>While blocks contribute to 3.3% of latent period variance. However, I don’t know if this is a significant amount of variance to say blocks do not have a significant effect on latent period. So, now I want to check the significant effects by comparing the log-likelihood of null model and the model where genotypes or blocks are in the fixed effects.</p>
+<div id="checking-the-effects-of-individuals" class="section level3">
+<h3>Checking the effects of individuals</h3>
+<pre class="r"><code>genot_fit_LP &lt;- remlf90(fixed = Laten_24.02.15_gp ~ Genotype,
+                        random =  ~ Block,
+                        data = strain_list[[1]],  # dataset for pathogen 09AX27
+                        method = &quot;ai&quot;)
+
+# Function to check the significance of individuals and blocks
+
+sig.fun = function(random, non_random, n_test){
+  stat = 2*(random - non_random)
+  
+  sig = 1 - pchisq(stat, n_test)
+  
+  return(sig)
+}
+
+random_LP_09 = LP_mix[[1]]$fit$`-2logL` # Getting the log-likelihood from mixed model LP infected with pathogen 09AX27, genotype not in the fixed part
+
+nonrand_LP_09 = genot_fit_LP$fit$`-2logL` # Getting the log-likelihood from mixed model LP infected with pathogen 09AX27, genotype in the fixed part
+
+# Checking the significance of individuals
+sig.fun(random = random_LP_09, non_random = nonrand_LP_09, n_test = 153)</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>Result: individuals have significant effects on the variance in latent period when they were infected with pathogen 09AX27.</p>
+<p>What about the block effects?</p>
+</div>
+<div id="checking-the-effects-of-blocks" class="section level3">
+<h3>Checking the effects of blocks</h3>
+<pre class="r"><code>block_fit_LP = remlf90(fixed = Laten_24.02.15_gp ~ Block, # fitted = blocks
+                       random =  ~ Genotype,
+                       data = strain_list[[1]], # LP for individuals infected with 09AX27
+                       method = &quot;ai&quot;)</code></pre>
+<pre><code>## Using default initial variances given by default_initial_variance()
+## See ?breedR.getOption.</code></pre>
+<pre class="r"><code>summary(block_fit_LP)</code></pre>
+<pre><code>## Formula: Laten_24.02.15_gp ~ 0 + Intercept + Block + Genotype 
+##    Data: strain_list[[1]] 
+##   AIC  BIC logLik
+##  2333 2342  -1165
+## 
+## Parameters of special components:
+## 
+## 
+## Variance components:
+##          Estimated variances    S.E.
+## Genotype               0.412 0.07716
+## Residual               1.042 0.06472
+## 
+## Fixed effects:
+##                               value   s.e.
+## Intercept                 10.569169 0.1009
+## Block.B4est_1_Bloc_1-28x3  0.154522 0.1240
+## Block.B4est_1_Bloc_2_28x3 -0.378840 0.1244
+## Block.B4est_1_Bloc_3_28x3  0.245692 0.1257
+## Block.B4est_1_Bloc_4_28x3  0.049524 0.1223
+## Block.B4est_1_Bloc_5_28x3  0.000000 0.0000</code></pre>
+<pre class="r"><code># random_LP_09
+nonrand2_LP_09 = block_fit_LP$fit$`-2logL` # Getting the log-likelihood from mixed model LP infected with pathogen 09AX27, block in the fixed part
+
+# Checking the significance of blocks
+sig.fun(random = random_LP_09, non_random = nonrand2_LP_09, n_test = 4)</code></pre>
+<pre><code>## [1] 0.1767528</code></pre>
+<p>Turned out blocks do not have a significant effects on the variance in latent period for the individuals infected with pathogen 09AX27.</p>
+<p>This is a good indicator for experimental trial. It is expected that individuals should have significant effects on the variance of the resistance components. Moreover, the further analysis is to detect the extent of genetics effects to the resistance components. So, the result makes sense. Furthermore, an experimental design should not introduce a systematic effect to the resistance components. Systematic effects can be from blocks or sample arrangement in the experimental design. It introduces bias to the analysis. So, the ideal result from a good experimental design is non-significant effects from blocks, like how it is shown in the result in this analysis.</p>
+</div>
+</div>
+<div id="adjusting-the-resistance-components-from-block-effects" class="section level1">
+<h1>Adjusting the resistance components from block effects</h1>
+<p>Even if the blocks do not have significant effects on the resistance components, it is still good to remove them to clean my data. The cleaned data will be used for the Genome-Wide Association Study later on.</p>
+<pre class="r"><code># Functions for adjustment 
+
+# Getting the plot coordinates
+fun.coord &lt;- function(X, Y){  
+  paste(X, Y, sep = &quot;-&quot;)  # Using functions: X = dataset$X, Y = dataset$Y
+}
+
+# Models: LP_mix (list of 3), UN_mix, US_mix
+# LP_mix[[1]] = s09AX27, [[2]] = s93JE3, [[3]] sP72
+
+# Getting the intercept from the model
+intercept &lt;- function(mix){  # mix being the name of model
+    mix$fixed$Intercept[[1]][1, &quot;value&quot;]  # Example, mix = LP_mix[[1]]
+}
+
+
+# Getting the variance associated to each individual
+BLUP.genot &lt;- function(mix, x){  # x being the name of a data frame object
+  merge(x, data.frame(&quot;Genotype&quot; = rownames(mix$ranef$Genotype[[1]]),
+                      &quot;BLUP_Genotype&quot; = mix$ranef$Genotype[[1]]$value),
+        by = &quot;Genotype&quot;)
+}
+
+# Getting the variance associated to each block
+BLUP.block &lt;- function(mix, x){
+  merge(x, data.frame(&quot;Block&quot; = rownames(mix$ranef$Block[[1]]),
+                      &quot;BLUP¨.block&quot; = mix$ranef$Block[[1]]$value),
+        by = &quot;Block&quot;)
+}
+
+# Getting the residual variance
+BLUP.resid &lt;- function(data, clean, mix){  # clean and data being the name of data frame object
+  merge(data, data.frame(&quot;coord&quot; = fun.coord(clean$X, clean$Y),
+                      &quot;BLUP_resid&quot; = residuals(mix)),
+        by = &quot;coord&quot;)
+}
+
+# Getting the adjusted value
+adj &lt;- function(x){  # x being the name of data frame object
+  x$intercept + x$BLUP_Genotype + x$BLUP_resid
+}</code></pre>
+<div id="adjusting-latent-period" class="section level2">
+<h2>Adjusting latent period</h2>
+<pre class="r"><code># Creating a list of dataframe to store the results
+adj_LP &lt;- list(s09AX27_clean[, -c(6:15)],  
+               s93JE3_clean[, -c(6:15)],
+               sP72_clean[, -c(6:15)])
+
+for (x in 1:length(adj_LP)){
+  adj_LP[[x]]$coord &lt;- fun.coord(X = adj_LP[[x]]$X, Y = adj_LP[[x]]$Y)  # adding coordinates to data frame x
+  
+  adj_LP[[x]]$intercept &lt;- intercept(mix = LP_mix[[x]])  # adding intercept extracted from mixmodel
+  
+  adj_LP[[x]] &lt;- BLUP.genot(mix = LP_mix[[x]], x = adj_LP[[x]])  # adding BLUP estimates extracted from mixmodel
+  
+  adj_LP[[x]] &lt;- BLUP.block(mix = LP_mix[[x]], x= adj_LP[[x]])
+  
+  adj_LP[[x]] &lt;- BLUP.resid(data = adj_LP[[x]], clean = adj_LP[[x]],  # adding residuals extracted from mixmodel
+                             mix = LP_mix[[x]])
+  
+  adj_LP[[x]]$adj_LP &lt;- adj(x = adj_LP[[x]])  # adjusting LP by removing block estimates
+}</code></pre>
+<p>Here is the snapshot of the adjusted (i.e. cleaned) latent period dataset for individuals infected by pathogen 09AX27</p>
+<pre class="r"><code>head(adj_LP[[1]], n = 5)</code></pre>
+<pre><code>##   coord               Block Genotype Strain X  Y intercept BLUP_Genotype BLUP..block  BLUP_resid    adj_LP
+## 1  1-13 B4est_1_Bloc_1-28x3     N-35 09AX27 1 13  10.58336   -0.12180945   0.1212395 -0.90064238  9.560911
+## 2  1-14 B4est_1_Bloc_1-28x3    SN-16 09AX27 1 14  10.58336    0.07748278   0.1212395 -0.01636240 10.644483
+## 3  1-16 B4est_1_Bloc_1-28x3    1-A09 09AX27 1 16  10.58336    0.44075654   0.1212395  0.05006835 11.074188
+## 4  1-17 B4est_1_Bloc_1-28x3   NOH-28 09AX27 1 17  10.58336    0.87465168   0.1212395 -0.64568501 10.812330
+## 5  1-18 B4est_1_Bloc_1-28x3     N-61 09AX27 1 18  10.58336   -0.18824019   0.1212395  0.21791463 10.613038</code></pre>
+<p>Other individuals infected by pathogen 93JE3 and P72 have the same kind of dataset.</p>
+</div>
+<div id="adjusting-uredinia-number" class="section level2">
+<h2>Adjusting uredinia number</h2>
+<pre class="r"><code>adj_UN &lt;- list(s09AX27_clean[, -c(6:15)],
+               s93JE3_clean[, -c(6:15)],
+               sP72_clean[, -c(6:15)])
+
+for (x in 1:length(adj_UN)){
+  adj_UN[[x]]$coord &lt;- fun.coord(adj_UN[[x]]$X, adj_UN[[x]]$Y)
+  
+  adj_UN[[x]]$intercept &lt;- intercept(mix = UN_mix[[x]])
+  
+  adj_UN[[x]] &lt;- BLUP.genot(UN_mix[[x]], adj_UN[[x]])
+  
+  adj_UN[[x]] &lt;- BLUP.block(UN_mix[[x]], adj_UN[[x]])
+  
+  adj_UN[[x]] &lt;- BLUP.resid(data = adj_UN[[x]], clean = adj_UN[[x]],
+                            mix = UN_mix[[x]])
+  
+  adj_UN[[x]]$adj_UN &lt;- adj(adj_UN[[x]])
+}</code></pre>
+<p>Here is the snapshot of the adjusted (i.e. cleaned) uredinia number dataset for individuals infected by pathogen 09AX27</p>
+<pre class="r"><code>head(adj_UN[[1]], n = 5)</code></pre>
+<pre><code>##   coord               Block Genotype Strain X  Y intercept BLUP_Genotype BLUP..block BLUP_resid   adj_UN
+## 1  1-13 B4est_1_Bloc_1-28x3     N-35 09AX27 1 13  7.036516     1.4123318   0.9632557  -1.801781 6.647067
+## 2  1-14 B4est_1_Bloc_1-28x3    SN-16 09AX27 1 14  7.036516    -0.2114908   0.9632557  -2.872338 3.952688
+## 3  1-16 B4est_1_Bloc_1-28x3    1-A09 09AX27 1 16  7.036516    -2.2173441   0.9632557  -3.407668 1.411504
+## 4  1-17 B4est_1_Bloc_1-28x3   NOH-28 09AX27 1 17  7.036516     0.2879847   0.9632557  -1.204031 6.120470
+## 5  1-18 B4est_1_Bloc_1-28x3     N-61 09AX27 1 18  7.036516     1.7141078   0.9632557   1.138366 9.888991</code></pre>
+</div>
+<div id="adjusting-uredinia-size" class="section level2">
+<h2>Adjusting uredinia size</h2>
+<pre class="r"><code>adj_US &lt;- list(s09AX27_clean[, -c(6:15)],
+               s93JE3_clean[, -c(6:15)],
+               sP72_clean[, -c(6:15)])
+
+for (x in 1:length(adj_US)){
+  adj_US[[x]]$coord &lt;- fun.coord(adj_US[[x]]$X, adj_US[[x]]$Y)
+  
+  adj_US[[x]]$intercept &lt;- intercept(mix = US_mix[[x]])
+  
+  adj_US[[x]] &lt;- BLUP.genot(US_mix[[x]], adj_US[[x]])
+  
+  adj_US[[x]] &lt;- BLUP.block(US_mix[[x]], adj_US[[x]])
+  
+  adj_US[[x]] &lt;- BLUP.resid(data = adj_US[[x]], clean = adj_US[[x]],
+                            mix = US_mix[[x]])
+  
+  adj_US[[x]]$adj_US &lt;- adj(adj_US[[x]])
+}</code></pre>
+<p>Here is the snapshot of the adjusted (i.e. cleaned) uredinia size dataset for individuals infected by pathogen 09AX27</p>
+<pre class="r"><code>head(adj_US[[1]], n = 5)</code></pre>
+<pre><code>##   coord               Block Genotype Strain X  Y intercept BLUP_Genotype BLUP..block  BLUP_resid   adj_US
+## 1  1-13 B4est_1_Bloc_1-28x3     N-35 09AX27 1 13  3.518238    0.18207636 -0.00097167 -0.46649413 3.233821
+## 2  1-14 B4est_1_Bloc_1-28x3    SN-16 09AX27 1 14  3.518238   -0.19393515 -0.00097167  0.10153160 3.425835
+## 3  1-16 B4est_1_Bloc_1-28x3    1-A09 09AX27 1 16  3.518238    0.08683741 -0.00097167 -0.05672164 3.548354
+## 4  1-17 B4est_1_Bloc_1-28x3   NOH-28 09AX27 1 17  3.518238   -1.04307749 -0.00097167  0.89279779 3.367959
+## 5  1-18 B4est_1_Bloc_1-28x3     N-61 09AX27 1 18  3.518238   -0.09355806 -0.00097167  0.05105103 3.475731</code></pre>
+</div>
+<div id="averaging-the-adjusted-resistance-components" class="section level2">
+<h2>Averaging the adjusted resistance components</h2>
+<pre class="r"><code># Strain 09AX27
+adj_s09AX27 &lt;- s09AX27_clean[, -c(6:15)]
+
+adj_s09AX27$Latence &lt;- adj_LP[[1]]$adj_LP
+adj_s09AX27$NbSS &lt;- adj_UN[[1]]$adj_UN
+adj_s09AX27$Taille &lt;- adj_US[[1]]$adj_US
+
+# Strain 93JE3
+adj_s93JE3 &lt;- s93JE3_clean[, -c(6:15)]
+
+adj_s93JE3$Latence &lt;- adj_LP[[2]]$adj_LP
+adj_s93JE3$NbSS &lt;- adj_UN[[2]]$adj_UN
+adj_s93JE3$Taille &lt;- adj_US[[2]]$adj_US
+
+# Strain P72
+adj_sP72 &lt;- sP72_clean[, -c(6:15)]
+
+adj_sP72$Latence &lt;- adj_LP[[3]]$adj_LP
+adj_sP72$NbSS &lt;- adj_UN[[3]]$adj_UN
+adj_sP72$Taille &lt;- adj_US[[3]]$adj_US</code></pre>
+<p>There are still information about blocks. I have to average the values of the resistance components across blocks.</p>
+<pre class="r"><code># I have to remove 5 individuals that do not have their corresponding SNPs
+# 6-J32, KUH-33, KUH-34, NL-1210, SSC
+missing = c(&quot;6-J32&quot;, &quot;KUH-33&quot;, &quot;KUH-34&quot;, &quot;NL-1210&quot;, &quot;SSC&quot;)
+
+# Function to remove the missing individuals
+trait.clean = function(data){
+  subset(data,!(Genotype %in% missing))
+}
+
+trait_list = list(adj_s09AX27, adj_s93JE3, adj_sP72)
+
+# Loop to remove the missing individuals
+for (i in 1:length(trait_list)) {
+  trait_list[[i]] = trait.clean(trait_list[[i]])
+}
+
+# Coercing the block in pathogen
+for (i in 1:length(trait_list)) {
+  trait_list[[i]]$Block = as.factor(trait_list[[i]]$Block)
+}
+
+# Function for averaging the resistance components
+mean.all = function(x, Genotype){
+  aggregate(x, by = Genotype, mean, na.rm = TRUE)
+}
+
+# Lists to store the averaged values
+mean_latence = list()
+mean_NbSS = list()
+mean_taille = list()
+
+# Loop to calculate the averaged values
+for (i in 1:length(trait_list)) {
+  mean_latence[[i]] = mean.all(trait_list[[i]]$Latence,
+                               list(trait_list[[i]]$Genotype))  # Latent period
+  
+  mean_NbSS[[i]] = mean.all(trait_list[[i]]$NbSS,
+                             list(trait_list[[i]]$Genotype))  # Uredinia number
+  
+  mean_taille[[i]] = mean.all(trait_list[[i]]$Taille,
+                               list(trait_list[[i]]$Genotype))  # Uredinia size
+}
+
+# [[1]] = 09AX27, [[2]] = 93JE3, [[3]] = P72</code></pre>
+</div>
+<div id="extracting-the-adjusted-resistance-components" class="section level2">
+<h2>Extracting the adjusted resistance components</h2>
+<p>Here is a snapshot for a cleaned dataset of the resistance components. Group = pathogen 09AX27</p>
+<pre class="r"><code>GWAS_09AX27 = data.frame(&quot;Trait&quot; = mean_latence[[1]]$Group.1,
+                          &quot;mean_Latence&quot; = mean_latence[[1]]$x,
+                          &quot;mean_NbSS&quot; = mean_NbSS[[1]]$x,
+                          &quot;mean_Taille&quot; = mean_taille[[1]]$x)
+head(GWAS_09AX27, n = 5)</code></pre>
+<pre><code>##   Trait mean_Latence mean_NbSS mean_Taille
+## 1 1-A02     10.18248  4.977008    3.796035
+## 2 1-A04     11.68678  3.568838    2.569735
+## 3 1-A08     11.23342  2.939343    3.010106
+## 4 1-A09     11.27439  5.670587    3.230057
+## 5 1-A25     10.67487  3.274563    3.207908</code></pre>
+<p>Group = pathogen 93JE3</p>
+<pre class="r"><code>GWAS_93JE3 = data.frame(&quot;Trait&quot; = mean_latence[[2]]$Group.1,
+                         &quot;mean_Latence&quot; = mean_latence[[2]]$x,
+                         &quot;mean_NbSS&quot; = mean_NbSS[[2]]$x,
+                         &quot;mean_Taille&quot; = mean_taille[[2]]$x)
+
+head(GWAS_93JE3, n = 5)</code></pre>
+<pre><code>##   Trait mean_Latence mean_NbSS mean_Taille
+## 1 1-A02     9.626598 11.816564    3.665869
+## 2 1-A04     9.912183  5.087618    3.483440
+## 3 1-A08     9.602847 14.394689    4.846388
+## 4 1-A09    10.045473  7.625770    3.617174
+## 5 1-A25     9.449420 15.211705    3.722564</code></pre>
+<p>Group = pathogen P72</p>
+<pre class="r"><code>GWAS_P72 &lt;- data.frame(&quot;Trait&quot; = mean_latence[[3]]$Group.1,
+                       &quot;mean_Latence&quot; = mean_latence[[3]]$x,
+                       &quot;mean_NbSS&quot; = mean_NbSS[[3]]$x,
+                       &quot;mean_Taille&quot; = mean_taille[[3]]$x)
+
+head(GWAS_P72, n = 5)</code></pre>
+<pre><code>##   Trait mean_Latence mean_NbSS mean_Taille
+## 1 1-A02     9.848321  4.215964    2.555992
+## 2 1-A04     8.978941 25.942458    3.380224
+## 3 1-A08     8.969984 17.026864    4.173381
+## 4 1-A09     8.617099 21.112630    3.329459
+## 5 1-A25     9.438548 16.447214    3.407456</code></pre>
+</div>
+<div id="plotting-the-averaged-values-resistance-component-latent-period" class="section level2">
+<h2>Plotting the averaged values (Resistance component: Latent period)</h2>
+<p>And here is the final distribution of latent period. It is in line with the intial insights that I gathered from the raw distribution, but even clearer now.</p>
+<p>Here, I see that most individuals infected by 09AX27 started showing the first symptom in much later days than the individuals infected by 93JE3 and P72.</p>
+<p>Given that the incubation period was 14 days, the information from latent period gives me the idea that the poplars could resist the population of pathogen 09AX27 much better than the population of pathogen 93JE3 and P72. This situation applied at least at the beginning of the incubation period.</p>
+<pre class="r"><code>gg = function(data, x, bin){
+  ggplot(data, aes(x)) +
+    geom_histogram(binwidth = bin, color = &quot;white&quot;, fill = &quot;darkblue&quot;) +
+    geom_vline(aes(xintercept = mean(x)), color = &quot;red&quot;,
+               linetype = &quot;dashed&quot;, size = 1)
+}
+
+gg_LP_09AX27 = gg(data = GWAS_09AX27, x = GWAS_09AX27$mean_Latence,
+                   bin = 0.4) +
+  xlab(&quot;Latent Period (days)&quot;) +
+  ylab(&quot;Counts of individuals&quot;) +
+  scale_x_continuous(limits = c(7,14)) +
+  scale_y_continuous(limits = c(0,70)) +
+  labs(title = &quot;Latent period&quot;, subtitle = &quot;Pathogen = 09AX27&quot;) +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_LP_93JE3 = gg(data = GWAS_93JE3, x = GWAS_93JE3$mean_Latence,
+                 bin = 0.4) +
+  xlab(&quot;Latent Period (days)&quot;) +
+  ylab(&quot;Counts of individuals&quot;) +
+  scale_x_continuous(limits = c(7,14)) +
+  scale_y_continuous(limits = c(0,70)) +
+  labs(subtitle = &quot;Pathogen = 93JE3&quot;) +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_LP_P72 = gg(data = GWAS_P72, x = GWAS_P72$mean_Latence,
+               bin = 0.4) +
+  xlab(&quot;Latent Period (days)&quot;) +
+  ylab(&quot;Counts of individuals&quot;) +
+  scale_x_continuous(limits = c(7,14)) +
+  scale_y_continuous(limits = c(0,70)) +
+  labs(subtitle = &quot;Pathogen = P72&quot;) +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+# Combining the figures
+LP_mean = ggpubr::ggarrange(gg_LP_09AX27, gg_LP_93JE3, gg_LP_P72)
+
+LP_mean</code></pre>
+<p><img src="preliminary_analysis_step3_files/figure-html/ggplot%20LP-1.png" width="960" /></p>
+</div>
+<div id="resistance-component-uredinia-number" class="section level2">
+<h2>Resistance component: Uredinia number</h2>
+<p>Individuals had various amounts of spores populating their leaves across different pathogens. However, poplars infected by pathogen P72 were suffering from more spores than the poplars infected by the other two.</p>
+<p>In conjunction with latent period, poplars infected by 09AX27 could be populated by the spores only after day 10 (much better than the poplars infected with the other two). Once the spores started populating the leaves, poplars infected by 09AX27 still could retain the population hence low amounts of spore.</p>
+<p>Poplars infected by 93JE3 could also resist the population of the spores once they started establishing. Only poplars infected by P72 gave up to the pathogen.</p>
+<pre class="r"><code>gg_UN_09AX27 = gg(data = GWAS_09AX27, x = GWAS_09AX27$mean_NbSS,
+                   bin = 1.5) +
+  xlab(&quot;Uredinia number&quot;) +
+  ylab(&quot;Counts of individuals&quot;) +
+  scale_x_continuous(limits = c(0,50)) +
+  scale_y_continuous(limits = c(0,40)) +
+  labs(title = &quot;Uredinia number&quot;, subtitle = &quot;Pathogen = 09AX27&quot;) +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_UN_93JE3 = gg(data = GWAS_93JE3, x = GWAS_93JE3$mean_NbSS,
+                 bin = 1.5) +
+  xlab(&quot;Uredinia number&quot;) +
+  ylab(&quot;Counts of individuals&quot;) +
+  scale_x_continuous(limits = c(0,50)) +
+  scale_y_continuous(limits = c(0,40)) +
+  labs(subtitle = &quot;Pathogen = 93JE3&quot;) +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_UN_P72 = gg(data = GWAS_P72, x = GWAS_P72$mean_NbSS,
+               bin = 1.5) +
+  xlab(&quot;Uredinia number&quot;) +
+  ylab(&quot;Counts of individuals&quot;) +
+  scale_x_continuous(limits = c(0,50)) +
+  scale_y_continuous(limits = c(0,40)) +
+  labs(subtitle = &quot;Pathogen = P72&quot;) +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+# Combining the figures
+UN_mean = ggpubr::ggarrange(gg_UN_09AX27, gg_UN_93JE3, gg_UN_P72)
+
+UN_mean</code></pre>
+<p><img src="preliminary_analysis_step3_files/figure-html/ggplot%20UN-1.png" width="960" /></p>
+</div>
+<div id="resistance-component-uredinia-size" class="section level2">
+<h2>Resistance component: Uredinia size</h2>
+<p>In conjuction with latent period and uredinia number.</p>
+<p>Poplars infected by 09AX27 could resist the growth of the pathogen in terms of their first spore population, the spread and the size of the spore (in terms of uredinia number and uredinia size, respectively)</p>
+<p>Poplars infected by 93JE3 could resist the spread of the pathogen but gave up in resisting the growth of its size (in terms of uredinia size)</p>
+<p>Poplars infected by P72 could not resist the spread of the pathogen but put efforts in resisting the growth of its size (in terms of uredinia size)</p>
+<p>Bottom line, poplars behaved differently across pathogens. They knew when to fight back and this is a potential to be explored, especially in the search of resistance.</p>
+<pre class="r"><code>gg_US_09AX27 = gg(data = GWAS_09AX27, x = GWAS_09AX27$mean_Taille,
+                   bin = 0.4) +
+  xlab(&quot;Uredinia size (score)&quot;) +
+  ylab(&quot;Counts of individuals&quot;) +
+  scale_x_continuous(limits = c(1,5)) +
+  scale_y_continuous(limits = c(0,60)) +
+  labs(title = &quot;Uredinia size&quot;, subtitle = &quot;Pathogen = 09AX27&quot;) +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_US_93JE3 = gg(data = GWAS_93JE3, x = GWAS_93JE3$mean_Taille,
+                 bin = 0.4) +
+  xlab(&quot;Uredinia size (score)&quot;) +
+  ylab(&quot;Counts of individuals&quot;) +
+  scale_x_continuous(limits = c(1,5)) +
+  scale_y_continuous(limits = c(0,60)) +
+  labs(subtitle = &quot;Pathogen = 93JE3&quot;) +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_US_P72 = gg(data = GWAS_P72, x = GWAS_P72$mean_Taille,
+               bin = 0.4) +
+  xlab(&quot;Uredinia size (score)&quot;) +
+  ylab(&quot;Counts of individuals&quot;) +
+  scale_x_continuous(limits = c(1,5)) +
+  scale_y_continuous(limits = c(0,60)) +
+  labs(subtitle = &quot;Pathogen = P72&quot;) +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+# Combining the plots
+US_mean = ggpubr::ggarrange(gg_US_09AX27, gg_US_93JE3, gg_US_P72)
+
+US_mean</code></pre>
+<p><img src="preliminary_analysis_step3_files/figure-html/ggplot%20US-1.png" width="960" /></p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
