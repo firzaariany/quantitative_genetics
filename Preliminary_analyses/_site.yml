@@ -1,0 +1,9 @@
+name: "Quantitative genetics"
+output_dir: "docs"
+navbar:
+  title: "Quantitative genetics"
+  left:
+  - text: "Home"
+output:
+  html_document:
+    theme: cosmo

@@ -1,7 +1,10 @@
 ---
 title: "Poplar's behaviors toward different rust types"
-author: "Firza Riany"
-date: "8/17/2020"
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+  encoding=encoding,
+  output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 output: 
   html_document:
     toc: TRUE
@@ -48,7 +51,7 @@ resistance.
 The variables needed in the analysis were:\
 - **Latent period, coded as Laten**\
 - **Number of spores, coded as NbSS**\
-\_ **Size of spores, coded as Taiil**
+- **Size of spores, coded as Taiil**
 
 Together, they are called "resistance components".
 
@@ -516,7 +519,7 @@ showing symptoms in much earlier days than the poplars infected by
 09AX27
 
 **Uredinia number**. Poplars that were infected by 93JE3 and P72 were
-populated with more spores than in poplars infected by 09AX27\*
+populated with more spores than in poplars infected by 09AX27
 
 **Uredinia size**. The spore size in the poplars infected by P72 had the
 smallest size (score = 3).

@@ -1,8 +1,10 @@
 ---
-title: "Preliminary analysis 3 rust test 1"
-subtitle: "The third step of prelim analysis"
-author: "Firza Riany"
-date: "8/21/2020"
+title: "Data cleaning before modelling"
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+  encoding=encoding,
+  output_file=file.path(dirname(input_file), out_dir, 'preparation_gwas.html'))})
 output: 
   html_document:
     toc: TRUE
@@ -134,13 +136,11 @@ While blocks contribute to 3.3% of latent period variance. However, I don't know
 
 ### Checking the effects of individuals
 
-```{r fix = genotype}
-genot_fit_LP <- remlf90(fixed = Laten_24.02.15_gp ~ Genotype,  # fitted = genotype
+```{r fix, message=FALSE, warning=FALSE}
+genot_fit_LP <- remlf90(fixed = Laten_24.02.15_gp ~ Genotype,
                         random =  ~ Block,
                         data = strain_list[[1]],  # dataset for pathogen 09AX27
                         method = "ai")
-
-summary(genot_fit_LP)
 
 # Function to check the significance of individuals and blocks
 
@@ -167,7 +167,7 @@ What about the block effects?
 
 ### Checking the effects of blocks
 
-```{r fix = blocks}
+```{r fix, blocks}
 block_fit_LP = remlf90(fixed = Laten_24.02.15_gp ~ Block, # fitted = blocks
                        random =  ~ Genotype,
                        data = strain_list[[1]], # LP for individuals infected with 09AX27
@@ -588,17 +588,17 @@ US_mean
 
 ```
 
-```{r extract 09AX27, message=FALSE, warning=FALSE, include=FALSE}
+```{r extract 09AX27_2, message=FALSE, warning=FALSE, include=FALSE}
 write.table(adj_s09AX27, "adj_traits_s09AX27.txt", sep = "\t", na = "NA", 
             quote = FALSE, row.names = FALSE)
 ```
 
-```{r extract 93JE3, message=FALSE, warning=FALSE, include=FALSE}
+```{r extract 93JE3_2, message=FALSE, warning=FALSE, include=FALSE}
 write.table(adj_s93JE3, "adj_traits_s93JE3.txt", sep = "\t", na = "NA", 
             quote = FALSE, row.names = FALSE)
 ```
 
-```{r extract P72, message=FALSE, warning=FALSE, include=FALSE}
+```{r extract P72_2, message=FALSE, warning=FALSE, include=FALSE}
 write.table(adj_sP72, "adj_traits_sP72.txt", sep = "\t", na = "NA", 
             quote = FALSE, row.names = FALSE)
 ```
