@@ -347,8 +347,7 @@ adj_sP72$NbSS <- adj_UN[[3]]$adj_UN
 adj_sP72$Taille <- adj_US[[3]]$adj_US
 ```
 
-There are still information about blocks. I have to average the values of the
-resistance components across blocks. 
+There are still information about blocks. I have to average the values of the resistance components across blocks.
 
 ```{r average}
 # I have to remove 5 individuals that do not have their corresponding SNPs
@@ -399,8 +398,7 @@ for (i in 1:length(trait_list)) {
 
 ## Extracting the adjusted resistance components
 
-Here is a snapshot for a cleaned dataset of the resistance components.
-Group = pathogen 09AX27
+Here is a snapshot for a cleaned dataset of the resistance components. Group = pathogen 09AX27
 
 ```{r extract}
 GWAS_09AX27 = data.frame("Trait" = mean_latence[[1]]$Group.1,
@@ -434,18 +432,13 @@ head(GWAS_P72, n = 5)
 
 ## Plotting the averaged values (Resistance component: Latent period)
 
-And here is the final distribution of latent period. It is in line with the
-intial insights that I gathered from the raw distribution, but even clearer now.
+And here is the final distribution of latent period. It is in line with the intial insights that I gathered from the raw distribution, but even clearer now.
 
-Here, I see that most individuals infected by 09AX27 started showing the first
-symptom in much later days than the individuals infected by 93JE3 and P72.
+Here, I see that most individuals infected by 09AX27 started showing the first symptom in much later days than the individuals infected by 93JE3 and P72.
 
-Given that the incubation period was 14 days, the information from latent period
-gives me the idea that the poplars could resist the population of pathogen 09AX27
-much better than the population of pathogen 93JE3 and P72. This situation applied
-at least at the beginning of the incubation period.
+Given that the incubation period was 14 days, the information from latent period gives me the idea that the poplars could resist the population of pathogen 09AX27 much better than the population of pathogen 93JE3 and P72. This situation applied at least at the beginning of the incubation period.
 
-```{r ggplot 09AX27, message=FALSE, warning=FALSE}
+```{r ggplot LP, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 gg = function(data, x, bin){
   ggplot(data, aes(x)) +
     geom_histogram(binwidth = bin, color = "white", fill = "darkblue") +
@@ -459,7 +452,7 @@ gg_LP_09AX27 = gg(data = GWAS_09AX27, x = GWAS_09AX27$mean_Latence,
   ylab("Counts of individuals") +
   scale_x_continuous(limits = c(7,14)) +
   scale_y_continuous(limits = c(0,70)) +
-  labs(title = "Mean latent period", subtitle = "Pathogen = 09AX27") +
+  labs(title = "Latent period", subtitle = "Pathogen = 09AX27") +
   hrbrthemes::theme_ipsum() +
   theme(plot.subtitle = element_text(size = 10),
         panel.grid.major = element_blank())
@@ -492,26 +485,123 @@ LP_mean = ggpubr::ggarrange(gg_LP_09AX27, gg_LP_93JE3, gg_LP_P72)
 LP_mean
 ```
 
+## Resistance component: Uredinia number
 
-# BOOKMARK
-```{r extract 09AX27, eval=FALSE, message=FALSE, warning=FALSE}
+Individuals had various amounts of spores populating their leaves across different pathogens. However, poplars infected by pathogen P72 were suffering from more spores than the poplars infected by the other two.
+
+In conjunction with latent period, poplars infected by 09AX27 could be populated by the spores only after day 10 (much better than the poplars infected with the other two). Once the spores started populating the leaves, poplars infected by 09AX27 still could retain the population hence low amounts of spore.
+
+Poplars infected by 93JE3 could also resist the population of the spores once they started establishing. Only poplars infected by P72 gave up to the pathogen.
+
+```{r ggplot UN, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
+gg_UN_09AX27 = gg(data = GWAS_09AX27, x = GWAS_09AX27$mean_NbSS,
+                   bin = 1.5) +
+  xlab("Uredinia number") +
+  ylab("Counts of individuals") +
+  scale_x_continuous(limits = c(0,50)) +
+  scale_y_continuous(limits = c(0,40)) +
+  labs(title = "Uredinia number", subtitle = "Pathogen = 09AX27") +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_UN_93JE3 = gg(data = GWAS_93JE3, x = GWAS_93JE3$mean_NbSS,
+                 bin = 1.5) +
+  xlab("Uredinia number") +
+  ylab("Counts of individuals") +
+  scale_x_continuous(limits = c(0,50)) +
+  scale_y_continuous(limits = c(0,40)) +
+  labs(subtitle = "Pathogen = 93JE3") +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_UN_P72 = gg(data = GWAS_P72, x = GWAS_P72$mean_NbSS,
+               bin = 1.5) +
+  xlab("Uredinia number") +
+  ylab("Counts of individuals") +
+  scale_x_continuous(limits = c(0,50)) +
+  scale_y_continuous(limits = c(0,40)) +
+  labs(subtitle = "Pathogen = P72") +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+# Combining the figures
+UN_mean = ggpubr::ggarrange(gg_UN_09AX27, gg_UN_93JE3, gg_UN_P72)
+
+UN_mean
+```
+
+## Resistance component: Uredinia size
+
+In conjuction with latent period and uredinia number.
+
+Poplars infected by 09AX27 could resist the growth of the pathogen in terms of their first spore population, the spread and the size of the spore (in terms of uredinia number and uredinia size, respectively)
+
+Poplars infected by 93JE3 could resist the spread of the pathogen but gave up in resisting the growth of its size (in terms of uredinia size)
+
+Poplars infected by P72 could not resist the spread of the pathogen but put efforts in resisting the growth of its size (in terms of uredinia size)
+
+Bottom line, poplars behaved differently across pathogens. They knew when to fight back and this is a potential to be explored, especially in the search of resistance.
+
+```{r ggplot US, fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
+gg_US_09AX27 = gg(data = GWAS_09AX27, x = GWAS_09AX27$mean_Taille,
+                   bin = 0.4) +
+  xlab("Uredinia size (score)") +
+  ylab("Counts of individuals") +
+  scale_x_continuous(limits = c(1,5)) +
+  scale_y_continuous(limits = c(0,60)) +
+  labs(title = "Uredinia size", subtitle = "Pathogen = 09AX27") +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_US_93JE3 = gg(data = GWAS_93JE3, x = GWAS_93JE3$mean_Taille,
+                 bin = 0.4) +
+  xlab("Uredinia size (score)") +
+  ylab("Counts of individuals") +
+  scale_x_continuous(limits = c(1,5)) +
+  scale_y_continuous(limits = c(0,60)) +
+  labs(subtitle = "Pathogen = 93JE3") +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+gg_US_P72 = gg(data = GWAS_P72, x = GWAS_P72$mean_Taille,
+               bin = 0.4) +
+  xlab("Uredinia size (score)") +
+  ylab("Counts of individuals") +
+  scale_x_continuous(limits = c(1,5)) +
+  scale_y_continuous(limits = c(0,60)) +
+  labs(subtitle = "Pathogen = P72") +
+  hrbrthemes::theme_ipsum() +
+  theme(plot.subtitle = element_text(size = 10),
+        panel.grid.major = element_blank())
+
+# Combining the plots
+US_mean = ggpubr::ggarrange(gg_US_09AX27, gg_US_93JE3, gg_US_P72)
+
+US_mean
+
+```
+
+```{r extract 09AX27, message=FALSE, warning=FALSE, include=FALSE}
 write.table(adj_s09AX27, "adj_traits_s09AX27.txt", sep = "\t", na = "NA", 
             quote = FALSE, row.names = FALSE)
 ```
 
-```{r extract 93JE3, message=FALSE, warning=FALSE, eval=FALSE}
+```{r extract 93JE3, message=FALSE, warning=FALSE, include=FALSE}
 write.table(adj_s93JE3, "adj_traits_s93JE3.txt", sep = "\t", na = "NA", 
             quote = FALSE, row.names = FALSE)
 ```
 
-```{r extract P72, eval=FALSE, message=FALSE, warning=FALSE}
+```{r extract P72, message=FALSE, warning=FALSE, include=FALSE}
 write.table(adj_sP72, "adj_traits_sP72.txt", sep = "\t", na = "NA", 
             quote = FALSE, row.names = FALSE)
 ```
 
-# Saving .RData for future analysis
-
-```{r save RData, message=FALSE, warning=FALSE, eval=FALSE}
+```{r save RData, message=FALSE, warning=FALSE, include=FALSE}
 save(s09AX27_clean, s93JE3_clean, sP72_clean, strain_list,
      s09AX27_loop, s93JE3_loop, sP72_loop,
      adj_LP, adj_UN, adj_US,
