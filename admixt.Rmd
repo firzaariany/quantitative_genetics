@@ -1,0 +1,96 @@
+---
+title: "Principal component analysis"
+output: html_notebook
+---
+
+# Brief description
+
+My study is about **dissecting the genetic control of resistance in black poplar**. To dissect the genes, I will model the association between the genes and the resistance components that I have already mentioned in the first three parts of this GH series. This association modeling is called Genome-Wide Association Study (GWAS).
+
+### Resistance components
+
+The data were collected from laboratory experiment.
+
+### Genetic data
+
+The data is stored in "SNP_rust_filter.ped". It is a .ped file generated using Plink. It contains 7 800 SNPs that are marking the genes of 154 black poplar's genome.
+
+### Correction factor for GWAS
+
+Population structure or location groupings of individuals can introduce bias in GWAS. It can be considered similar with blocking concept as in experimental design. It barriers the continuous genetic variance in individuals across geographical locations. It's led to the similarity between individuals that come from the same geographical location.
+
+So, I will make a correction matrix consisting of *K* geographical locations and 154 individuals. I will have to determine the *K* a priori, which I will show you in this section. The method I use is Principal Component Analysis (PCA) that groups individuals with similar variance in one group and individuals with significantly different variance in another. I will use PCA model from LEA package developed by [Bioconductor - LEA](https://bioconductor.org/packages/release/bioc/html/LEA.html)
+
+# Preparation
+
+I'm loading the LEA package and the genetic data. As LEA cannot read .ped format, my file should be converted to a LEA-friendly format using `ped2lfmm()` function. See LEA Reference Manual - [LEA.pdf (bioconductor.org)](https://bioconductor.org/packages/release/bioc/manuals/LEA/man/LEA.pdf).
+
+```{r libraries}
+# PCA modeling
+library(LEA)
+
+# Data wrangling
+library(readxl)  # To load the population names
+library(tidyr)  # To tidy the dataset
+
+# Plotting
+library(RColorBrewer)  # To get plot colors
+library(ggplot2)  # To plot the admixture coefficients
+library(forcats)
+library(ggthemes)
+library(patchwork)
+```
+
+```{r load dataset}
+genot_data = ped2lfmm(input.file = "SNP_rust_filter.ped",
+                      output.file = "SNP_rust_filter.lfmm",
+                      force = TRUE)
+```
+
+I store the data in `genot_data` object and upon running it, you will get the result: "number of detected individuals" and "number of detected loci". However, this syntax only allows me to convert .ped to .lfmm and stores it in my local computer. It has not imported the file into R. To import the file, I have to write the following syntax:
+
+```{r read data}
+genot = read.lfmm(genot_data)
+```
+
+Now the data has been imported to R.
+
+# Running the model
+
+As I mentioned before, I have to create a correction matrix consisting of *K* geographical locations (or groupings) and 154 individuals. The *K* should be determined arbitrarily. As my individuals are coming from 12 populations, it should be safe to assume that the groupings should be between 1 to 12. But to give some room for variation, I put the range between 1 to 15. It is defined in the argument `K` in the syntax of `snmf()` function.
+
+For further information about the function and PCA model, see [LEA.pdf (bioconductor.org)](https://bioconductor.org/packages/release/bioc/vignettes/LEA/inst/doc/LEA.pdf)
+
+```{r PCA, message=FALSE, warning=FALSE, results="hide"}
+pop_structure2 = snmf(input.file = genot_data, K = 1:15,
+                      ploidy = 2, entropy = T,
+                      alpha = 100, repetitions = 5,
+                      project = "new")
+```
+
+```{r summary PCA}
+summary(pop_structure2)
+```
+
+The important information is the cross entropy (stored in `$crossEntropy` from the summary of the model. You should get K with the lowest cross entropy because to simply put it, it's the one with the smallest deviation from the real population values. In this case, I will probably go with K = 4
+
+```{r cross-entropy}
+plot(pop_structure2, col = "blue4", cex = 1.4, pch = 19)
+```
+
+# Matrix of correction
+
+It can also be called matrix of admixture. This matrix can be extracted from the model for K = 4.
+
+```{r K matrix}
+qmatrix <- Q(object = pop_structure2, K = 4, run = 1)
+
+head(qmatrix)
+
+# Assigning the names of ancestral populations K
+colnames(qmatrix) <- c("Q1", "Q2", "Q3", "Q4")
+
+head(qmatrix)
+```
+
+# Visualization
