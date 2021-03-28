@@ -19,7 +19,9 @@ The data is stored in "SNP_rust_filter.ped". It is a .ped file generated using P
 
 Population structure or location groupings of individuals can introduce bias in GWAS. It can be considered similar with blocking concept as in experimental design. It barriers the continuous genetic variance in individuals across geographical locations. It's led to the similarity between individuals that come from the same geographical location.
 
-So, I will make a correction matrix consisting of *K* geographical locations and 154 individuals. I will have to determine the *K* a priori, which I will show you in this section. The method I use is Principal Component Analysis (PCA) that groups individuals with similar variance in one group and individuals with significantly different variance in another. I will use PCA model from LEA package developed by [Bioconductor - LEA](https://bioconductor.org/packages/release/bioc/html/LEA.html)
+So, I will make a correction matrix consisting of *K* groups of similarity and 154 individuals. The method I use is Principal Component Analysis (PCA) that groups individuals with similar variance in one group and individuals with significantly different variance in another. The PCA will calculate the closeness of each individual to each of the *K* groups in terms of **admixture coefficients (Q)** I will have to determine the *K* *a priori*, which I will show you in this section.
+
+I will use PCA model from LEA package developed by [Bioconductor - LEA](https://bioconductor.org/packages/release/bioc/html/LEA.html)
 
 # Preparation
 
@@ -57,7 +59,7 @@ Now the data has been imported to R.
 
 # Running the model
 
-As I mentioned before, I have to create a correction matrix consisting of *K* geographical locations (or groupings) and 154 individuals. The *K* should be determined arbitrarily. As my individuals are coming from 12 populations, it should be safe to assume that the groupings should be between 1 to 12. But to give some room for variation, I put the range between 1 to 15. It is defined in the argument `K` in the syntax of `snmf()` function.
+As I mentioned before, I have to create a correction matrix consisting of *K* groups of closeness and 154 individuals. The *K* should be determined arbitrarily. As my individuals are coming from 12 populations, it should be safe to assume that the groupings should be between 1 to 12. But to give some room for variation, I put the range between 1 to 15. It is defined in the argument `K` in the syntax of `snmf()` function.
 
 For further information about the function and PCA model, see [LEA.pdf (bioconductor.org)](https://bioconductor.org/packages/release/bioc/vignettes/LEA/inst/doc/LEA.pdf)
 
@@ -72,15 +74,17 @@ pop_structure2 = snmf(input.file = genot_data, K = 1:15,
 summary(pop_structure2)
 ```
 
-The important information is the cross entropy (stored in `$crossEntropy` from the summary of the model. You should get K with the lowest cross entropy because to simply put it, it's the one with the smallest deviation from the real population values. In this case, I will probably go with K = 4
+The important information is the cross entropy (stored in `$crossEntropy` from the summary of the model. You should get *K* with the lowest cross entropy because to simply put it, it's the one with the smallest deviation from the real population values. In this case, I will probably go with *K* = 4
 
 ```{r cross-entropy}
 plot(pop_structure2, col = "blue4", cex = 1.4, pch = 19)
 ```
 
-# Matrix of correction
+# Matrix of correction (admixture matrix)
 
-It can also be called matrix of admixture. This matrix can be extracted from the model for K = 4.
+It can also be called admixture matrix. This matrix can be extracted from the model for K = 4.
+
+Each row in the matrix includes the degree of closeness of an individual to each of the *Ks.* I name them Q1 - Q4. If I include the population names, the admixture matrix can classify the mixtures of individuals' genetic variance from different geographical locations.
 
 ```{r K matrix}
 qmatrix <- Q(object = pop_structure2, K = 4, run = 1)
@@ -93,4 +97,72 @@ colnames(qmatrix) <- c("Q1", "Q2", "Q3", "Q4")
 head(qmatrix)
 ```
 
+## Tidying the dataset
+
+The dataset hasn't had individual and population names. So, I will convert the matrix into a dataset and assign the names. The individual names are assigned in SNP dataset and the population name is in a raw dataset called B4EST_Selection_Tests.
+
+```{r convert}
+df_qmatrix <- data.frame(qmatrix)
+
+{r pop name}
+# Assigning individual names + population of origin 
+SNP = read.table("SNP_rust_filter.ped")  # To get the individual names
+ind_names = as.vector(SNP$V1)
+df_qmatrix$Ind = ind_names
+
+# To get the population names
+pop = read_xlsx("B4EST_Selection_tests_multisouches_Task1.3.xlsx",
+                 sheet = 1)
+
+pop_filter = pop[pop$Nom_genotype %in% ind_names, ]
+df_qmatrix$Pop = pop_filter$Population
+df_qmatrix = df_qmatrix[order(df_qmatrix$Pop), ]
+
+# Ordering the columns
+df_qmatrix = df_qmatrix[, c("Ind", "Pop", "Q1", "Q2", "Q3", "Q4")]
+
+head(df_qmatrix)
+```
+
+I then save the dataset as an admixture matrix for my population.
+
+```{r save dataset}
+# Saving the dataset for GWAS ----
+write.table(x = df_qmatrix[, -2], 
+            file = "covariate_popstruct.txt", 
+            sep = "\t", 
+            dec = ".",
+            row.names = FALSE,
+            quote = FALSE)
+```
+
 # Visualization
+
+```{r ggplot viz, fig.height=4, fig.width=15}
+# Tidying the dataset, from wide to long
+df_qmatrix_long <- gather(df_qmatrix, key = "Coeff", 
+                          value = "Q", -c("Ind", "Pop"))
+
+
+# Plotting the admixture coefficients ----
+Q4_plot <- 
+  ggplot(data = df_qmatrix_long, aes(x = factor(Ind), y = Q, fill = factor(Coeff))) +
+  geom_col(color = "gray", size = 0.1) +
+  facet_grid(~fct_inorder(Pop), switch = "x", scales = "free", space = "free") +
+  theme_minimal() + 
+  labs(x = "Individuals", title = "K = 4", y = "Admixture coefficients") +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_discrete(expand = expansion(add = 4)) +
+  theme(
+    panel.spacing.x = unit(x = 0.1, "lines"),
+    axis.text.x = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  scale_fill_gdocs(guide = FALSE)
+
+Q4_plo
+```
+
+The bar graph visualizes the admixture matrix of the individuals in several populations. Each bar represents an individual and the mixture of its genetic variance. As I have the grouping factor of K that is equal to 4, I calculated how close an individual to each of the Ks. This measure of closeness classifies the mixtures of individuals' genetic variance from different geographical locations. Individuals from the same location tends to have similar mixtures. For example, individuals from Adour (France) have completely different mixtures from individuals from Ticino (Italy).
+
+Furthermore, we can also say this closeness between individuals will affect the expression of their genes, i.e. in resistance. Closely-related individuals tend to have genetic resemblance, and, in terms of resistance, similar resistance to pest attack. This is the bias that geographical locations introduce to GWAS. Hence, I used the admixture matrix as correction matrix in GWAS.
