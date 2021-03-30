@@ -1,6 +1,15 @@
 ---
 title: "Principal component analysis"
-output: html_notebook
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+  encoding=encoding,
+  output_file=file.path(dirname(input_file), out_dir, 'pca.html'))})
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    collapsed: FALSE
 ---
 
 # Brief description
@@ -66,7 +75,7 @@ For further information about the function and PCA model, see [LEA.pdf (biocondu
 ```{r PCA, message=FALSE, warning=FALSE, results="hide"}
 pop_structure2 = snmf(input.file = genot_data, K = 1:15,
                       ploidy = 2, entropy = T,
-                      alpha = 100, repetitions = 5,
+                      alpha = 100,
                       project = "new")
 ```
 
@@ -87,7 +96,7 @@ It can also be called admixture matrix. This matrix can be extracted from the mo
 Each row in the matrix includes the degree of closeness of an individual to each of the *Ks.* I name them Q1 - Q4. If I include the population names, the admixture matrix can classify the mixtures of individuals' genetic variance from different geographical locations.
 
 ```{r K matrix}
-qmatrix <- Q(object = pop_structure2, K = 4, run = 1)
+qmatrix <- Q(object = pop_structure2, K = 4)
 
 head(qmatrix)
 
@@ -104,7 +113,6 @@ The dataset hasn't had individual and population names. So, I will convert the m
 ```{r convert}
 df_qmatrix <- data.frame(qmatrix)
 
-{r pop name}
 # Assigning individual names + population of origin 
 SNP = read.table("SNP_rust_filter.ped")  # To get the individual names
 ind_names = as.vector(SNP$V1)
@@ -160,7 +168,7 @@ Q4_plot <-
   ) +
   scale_fill_gdocs(guide = FALSE)
 
-Q4_plo
+Q4_plot
 ```
 
 The bar graph visualizes the admixture matrix of the individuals in several populations. Each bar represents an individual and the mixture of its genetic variance. As I have the grouping factor of K that is equal to 4, I calculated how close an individual to each of the Ks. This measure of closeness classifies the mixtures of individuals' genetic variance from different geographical locations. Individuals from the same location tends to have similar mixtures. For example, individuals from Adour (France) have completely different mixtures from individuals from Ticino (Italy).

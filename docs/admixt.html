@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>Principal component analysis</title>
+
+<script src="site_libs/header-attrs-2.6/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Quantitative genetics</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="EDA.html">Exploratory data analysis</a>
+</li>
+<li>
+  <a href="preparation_gwas.html">Data cleaning</a>
+</li>
+<li>
+  <a href="pca.html">Principal component analysis</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Principal component analysis</h1>
+
+</div>
+
+
+<div id="brief-description" class="section level1">
+<h1>Brief description</h1>
+<p>My study is about <strong>dissecting the genetic control of resistance in black poplar</strong>. To dissect the genes, I will model the association between the genes and the resistance components that I have already mentioned in the first three parts of this GH series. This association modeling is called Genome-Wide Association Study (GWAS).</p>
+<div id="resistance-components" class="section level3">
+<h3>Resistance components</h3>
+<p>The data were collected from laboratory experiment.</p>
+</div>
+<div id="genetic-data" class="section level3">
+<h3>Genetic data</h3>
+<p>The data is stored in “SNP_rust_filter.ped”. It is a .ped file generated using Plink. It contains 7 800 SNPs that are marking the genes of 154 black poplar’s genome.</p>
+</div>
+<div id="correction-factor-for-gwas" class="section level3">
+<h3>Correction factor for GWAS</h3>
+<p>Population structure or location groupings of individuals can introduce bias in GWAS. It can be considered similar with blocking concept as in experimental design. It barriers the continuous genetic variance in individuals across geographical locations. It’s led to the similarity between individuals that come from the same geographical location.</p>
+<p>So, I will make a correction matrix consisting of <em>K</em> groups of similarity and 154 individuals. The method I use is Principal Component Analysis (PCA) that groups individuals with similar variance in one group and individuals with significantly different variance in another. The PCA will calculate the closeness of each individual to each of the <em>K</em> groups in terms of <strong>admixture coefficients (Q)</strong> I will have to determine the <em>K</em> <em>a priori</em>, which I will show you in this section.</p>
+<p>I will use PCA model from LEA package developed by <a href="https://bioconductor.org/packages/release/bioc/html/LEA.html">Bioconductor - LEA</a></p>
+</div>
+</div>
+<div id="preparation" class="section level1">
+<h1>Preparation</h1>
+<p>I’m loading the LEA package and the genetic data. As LEA cannot read .ped format, my file should be converted to a LEA-friendly format using <code>ped2lfmm()</code> function. See LEA Reference Manual - <a href="https://bioconductor.org/packages/release/bioc/manuals/LEA/man/LEA.pdf">LEA.pdf (bioconductor.org)</a>.</p>
+<pre class="r"><code># PCA modeling
+library(LEA)
+
+# Data wrangling
+library(readxl)  # To load the population names
+library(tidyr)  # To tidy the dataset
+
+# Plotting
+library(RColorBrewer)  # To get plot colors
+library(ggplot2)  # To plot the admixture coefficients
+library(forcats)
+library(ggthemes)
+library(patchwork)</code></pre>
+<pre class="r"><code>genot_data = ped2lfmm(input.file = &quot;SNP_rust_filter.ped&quot;,
+                      output.file = &quot;SNP_rust_filter.lfmm&quot;,
+                      force = TRUE)</code></pre>
+<pre><code>## 
+##  - number of detected individuals:   154
+##  - number of detected loci:      7805</code></pre>
+<p>I store the data in <code>genot_data</code> object and upon running it, you will get the result: “number of detected individuals” and “number of detected loci”. However, this syntax only allows me to convert .ped to .lfmm and stores it in my local computer. It has not imported the file into R. To import the file, I have to write the following syntax:</p>
+<pre class="r"><code>genot = read.lfmm(genot_data)</code></pre>
+<p>Now the data has been imported to R.</p>
+</div>
+<div id="running-the-model" class="section level1">
+<h1>Running the model</h1>
+<p>As I mentioned before, I have to create a correction matrix consisting of <em>K</em> groups of closeness and 154 individuals. The <em>K</em> should be determined arbitrarily. As my individuals are coming from 12 populations, it should be safe to assume that the groupings should be between 1 to 12. But to give some room for variation, I put the range between 1 to 15. It is defined in the argument <code>K</code> in the syntax of <code>snmf()</code> function.</p>
+<p>For further information about the function and PCA model, see <a href="https://bioconductor.org/packages/release/bioc/vignettes/LEA/inst/doc/LEA.pdf">LEA.pdf (bioconductor.org)</a></p>
+<pre class="r"><code>pop_structure2 = snmf(input.file = genot_data, K = 1:15,
+                      ploidy = 2, entropy = T,
+                      alpha = 100,
+                      project = &quot;new&quot;)</code></pre>
+<pre class="r"><code>summary(pop_structure2)</code></pre>
+<pre><code>## $repetitions
+##                       K = 1 K = 2 K = 3 K = 4 K = 5 K = 6 K = 7 K = 8 K = 9 K = 10 K = 11 K = 12 K = 13 K = 14 K = 15
+## with cross-entropy        1     1     1     1     1     1     1     1     1      1      1      1      1      1      1
+## without cross-entropy     0     0     0     0     0     0     0     0     0      0      0      0      0      0      0
+## total                     1     1     1     1     1     1     1     1     1      1      1      1      1      1      1
+## 
+## $crossEntropy
+##          K = 1     K = 2     K = 3     K = 4     K = 5     K = 6     K = 7     K = 8     K = 9    K = 10    K = 11    K = 12
+## min  0.8970495 0.8547834 0.8494508 0.8426045 0.8430669 0.8482799 0.8539506 0.8615982 0.8623826 0.8696264 0.8752486 0.8811998
+## mean 0.8970495 0.8547834 0.8494508 0.8426045 0.8430669 0.8482799 0.8539506 0.8615982 0.8623826 0.8696264 0.8752486 0.8811998
+## max  0.8970495 0.8547834 0.8494508 0.8426045 0.8430669 0.8482799 0.8539506 0.8615982 0.8623826 0.8696264 0.8752486 0.8811998
+##         K = 13    K = 14    K = 15
+## min  0.8874606 0.9013668 0.9186521
+## mean 0.8874606 0.9013668 0.9186521
+## max  0.8874606 0.9013668 0.9186521</code></pre>
+<p>The important information is the cross entropy (stored in <code>$crossEntropy</code> from the summary of the model. You should get <em>K</em> with the lowest cross entropy because to simply put it, it’s the one with the smallest deviation from the real population values. In this case, I will probably go with <em>K</em> = 4</p>
+<pre class="r"><code>plot(pop_structure2, col = &quot;blue4&quot;, cex = 1.4, pch = 19)</code></pre>
+<p><img src="admixt_files/figure-html/cross-entropy-1.png" width="672" /></p>
+</div>
+<div id="matrix-of-correction-admixture-matrix" class="section level1">
+<h1>Matrix of correction (admixture matrix)</h1>
+<p>It can also be called admixture matrix. This matrix can be extracted from the model for K = 4.</p>
+<p>Each row in the matrix includes the degree of closeness of an individual to each of the <em>Ks.</em> I name them Q1 - Q4. If I include the population names, the admixture matrix can classify the mixtures of individuals’ genetic variance from different geographical locations.</p>
+<pre class="r"><code>qmatrix &lt;- Q(object = pop_structure2, K = 4)
+
+head(qmatrix)</code></pre>
+<pre><code>##              V1       V2       V3        V4
+## [1,] 9.9991e-05 0.167765 0.732430 0.0997049
+## [2,] 9.9990e-05 0.197581 0.731383 0.0709365
+## [3,] 9.9990e-05 0.210565 0.731945 0.0573899
+## [4,] 9.9990e-05 0.173151 0.698376 0.1283730
+## [5,] 9.9990e-05 0.159667 0.798517 0.0417158
+## [6,] 9.9991e-05 0.172299 0.771327 0.0562739</code></pre>
+<pre class="r"><code># Assigning the names of ancestral populations K
+colnames(qmatrix) &lt;- c(&quot;Q1&quot;, &quot;Q2&quot;, &quot;Q3&quot;, &quot;Q4&quot;)
+
+head(qmatrix)</code></pre>
+<pre><code>##              Q1       Q2       Q3        Q4
+## [1,] 9.9991e-05 0.167765 0.732430 0.0997049
+## [2,] 9.9990e-05 0.197581 0.731383 0.0709365
+## [3,] 9.9990e-05 0.210565 0.731945 0.0573899
+## [4,] 9.9990e-05 0.173151 0.698376 0.1283730
+## [5,] 9.9990e-05 0.159667 0.798517 0.0417158
+## [6,] 9.9991e-05 0.172299 0.771327 0.0562739</code></pre>
+<div id="tidying-the-dataset" class="section level2">
+<h2>Tidying the dataset</h2>
+<p>The dataset hasn’t had individual and population names. So, I will convert the matrix into a dataset and assign the names. The individual names are assigned in SNP dataset and the population name is in a raw dataset called B4EST_Selection_Tests.</p>
+<pre class="r"><code>df_qmatrix &lt;- data.frame(qmatrix)
+
+# Assigning individual names + population of origin 
+SNP = read.table(&quot;SNP_rust_filter.ped&quot;)  # To get the individual names
+ind_names = as.vector(SNP$V1)
+df_qmatrix$Ind = ind_names
+
+# To get the population names
+pop = read_xlsx(&quot;B4EST_Selection_tests_multisouches_Task1.3.xlsx&quot;,
+                 sheet = 1)
+
+pop_filter = pop[pop$Nom_genotype %in% ind_names, ]
+df_qmatrix$Pop = pop_filter$Population
+df_qmatrix = df_qmatrix[order(df_qmatrix$Pop), ]
+
+# Ordering the columns
+df_qmatrix = df_qmatrix[, c(&quot;Ind&quot;, &quot;Pop&quot;, &quot;Q1&quot;, &quot;Q2&quot;, &quot;Q3&quot;, &quot;Q4&quot;)]
+
+head(df_qmatrix)</code></pre>
+<pre><code>##            Ind   Pop          Q1          Q2       Q3          Q4
+## 41      BDX-02 Adour 0.014513200 9.99821e-05 0.985287 9.99821e-05
+## 42      BDX-03 Adour 0.000099991 7.91112e-02 0.898880 2.19084e-02
+## 43      BDX-08 Adour 0.000099982 3.87025e-02 0.961098 9.99820e-05
+## 45      CTR-05 Adour 0.006656400 9.64613e-02 0.896782 9.99910e-05
+## 46      CTR-09 Adour 0.000099982 5.46214e-02 0.945179 9.99820e-05
+## 47 71041-3-402 Adour 0.314348000 1.08450e-01 0.425144 1.52058e-01</code></pre>
+<p>I then save the dataset as an admixture matrix for my population.</p>
+<pre class="r"><code># Saving the dataset for GWAS ----
+write.table(x = df_qmatrix[, -2], 
+            file = &quot;covariate_popstruct.txt&quot;, 
+            sep = &quot;\t&quot;, 
+            dec = &quot;.&quot;,
+            row.names = FALSE,
+            quote = FALSE)</code></pre>
+</div>
+</div>
+<div id="visualization" class="section level1">
+<h1>Visualization</h1>
+<pre class="r"><code># Tidying the dataset, from wide to long
+df_qmatrix_long &lt;- gather(df_qmatrix, key = &quot;Coeff&quot;, 
+                          value = &quot;Q&quot;, -c(&quot;Ind&quot;, &quot;Pop&quot;))
+
+
+# Plotting the admixture coefficients ----
+Q4_plot &lt;- 
+  ggplot(data = df_qmatrix_long, aes(x = factor(Ind), y = Q, fill = factor(Coeff))) +
+  geom_col(color = &quot;gray&quot;, size = 0.1) +
+  facet_grid(~fct_inorder(Pop), switch = &quot;x&quot;, scales = &quot;free&quot;, space = &quot;free&quot;) +
+  theme_minimal() + 
+  labs(x = &quot;Individuals&quot;, title = &quot;K = 4&quot;, y = &quot;Admixture coefficients&quot;) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_x_discrete(expand = expansion(add = 4)) +
+  theme(
+    panel.spacing.x = unit(x = 0.1, &quot;lines&quot;),
+    axis.text.x = element_blank(),
+    panel.grid = element_blank()
+  ) +
+  scale_fill_gdocs(guide = FALSE)
+
+Q4_plot</code></pre>
+<p><img src="admixt_files/figure-html/ggplot%20viz-1.png" width="1440" /></p>
+<p>The bar graph visualizes the admixture matrix of the individuals in several populations. Each bar represents an individual and the mixture of its genetic variance. As I have the grouping factor of K that is equal to 4, I calculated how close an individual to each of the Ks. This measure of closeness classifies the mixtures of individuals’ genetic variance from different geographical locations. Individuals from the same location tends to have similar mixtures. For example, individuals from Adour (France) have completely different mixtures from individuals from Ticino (Italy).</p>
+<p>Furthermore, we can also say this closeness between individuals will affect the expression of their genes, i.e. in resistance. Closely-related individuals tend to have genetic resemblance, and, in terms of resistance, similar resistance to pest attack. This is the bias that geographical locations introduce to GWAS. Hence, I used the admixture matrix as correction matrix in GWAS.</p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

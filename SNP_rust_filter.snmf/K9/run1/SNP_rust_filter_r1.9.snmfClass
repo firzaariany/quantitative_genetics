@@ -1,6 +1,6 @@
 new("snmfClass", directory = "K9/run1/", snmfClass.file = "SNP_rust_filter_r1.9.snmfClass", 
-    K = 9L, run = 1L, CPU = 1L, seed = 37245586L, alpha = 100, 
+    K = 9L, run = 1L, CPU = 1L, seed = 182455119L, alpha = 100, 
     percentage = 0.05, I = 0L, iterations = 200L, entropy = TRUE, 
-    tolerance = 1e-05, crossEntropy = 0.861389791087341, ploidy = 2L, 
+    tolerance = 1e-05, crossEntropy = 0.862382642973982, ploidy = 2L, 
     Q.input.file = "", Q.output.file = "SNP_rust_filter_r1.9.Q", 
     G.output.file = "SNP_rust_filter_r1.9.G")

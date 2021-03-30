@@ -371,6 +371,9 @@ div.tocify {
 <li>
   <a href="preparation_gwas.html">Data cleaning</a>
 </li>
+<li>
+  <a href="pca.html">Principal component analysis</a>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         
@@ -440,20 +443,20 @@ rust_test1 = read.delim2(&quot;B4est_test1_LectureJ13_J14_commented.txt&quot;, n
 test1_selec = rust_test1[ ,-c(12, 13, 15)]  # getting only the columns that we need</code></pre>
 <p>In the raw dataset I had 15 variables. I did not need all these 15 variables, so for simplicity, I selected only the variables that I needed. The preview of the first 5 observation in the dataset with the variables I needed is shown below:</p>
 <pre class="r"><code>head(test1_selec)</code></pre>
-<pre><code>##                 Block Strain Genotype X  Y Laten_24.02.15_gp NbSS_24.02.15_gp NbSnS_24.02.15_gp
-## 1 B4est_1_Bloc_1-28x3 09AX27     N-35 1 13              11.0               13                 0
-## 2 B4est_1_Bloc_1-28x3 09AX27   NOH-13 2 13               9.0                6                 0
-## 3 B4est_1_Bloc_1-28x3 09AX27      N-1 3 13              13.0                2                 2
-## 4 B4est_1_Bloc_1-28x3 09AX27    6-A18 4 13               9.5                4                 0
-## 5 B4est_1_Bloc_1-28x3 09AX27   SSN-01 5 13              12.5                2                 1
-## 6 B4est_1_Bloc_1-28x3 09AX27   BDX-09 6 13              -5.0                0                 3
-##   NbSO_24.02.15_gp NbPtN_24.02.15_gp Taill_05.08.20_gp points.noirs.avant.le.test
-## 1                1                 0                 5                         NA
-## 2                8                 0                 4                         NA
-## 3                6                 3                 2                         NA
-## 4                8                 0                 5                         NA
-## 5                6                 0                 1                         NA
-## 6               11                 0                 0                         NA</code></pre>
+<pre><code>##                 Block Strain Genotype X  Y Laten_24.02.15_gp NbSS_24.02.15_gp NbSnS_24.02.15_gp NbSO_24.02.15_gp
+## 1 B4est_1_Bloc_1-28x3 09AX27     N-35 1 13              11.0               13                 0                1
+## 2 B4est_1_Bloc_1-28x3 09AX27   NOH-13 2 13               9.0                6                 0                8
+## 3 B4est_1_Bloc_1-28x3 09AX27      N-1 3 13              13.0                2                 2                6
+## 4 B4est_1_Bloc_1-28x3 09AX27    6-A18 4 13               9.5                4                 0                8
+## 5 B4est_1_Bloc_1-28x3 09AX27   SSN-01 5 13              12.5                2                 1                6
+## 6 B4est_1_Bloc_1-28x3 09AX27   BDX-09 6 13              -5.0                0                 3               11
+##   NbPtN_24.02.15_gp Taill_05.08.20_gp points.noirs.avant.le.test
+## 1                 0                 5                         NA
+## 2                 0                 4                         NA
+## 3                 3                 2                         NA
+## 4                 0                 5                         NA
+## 5                 0                 1                         NA
+## 6                 0                 0                         NA</code></pre>
 </div>
 <div id="checking-the-resistant-vs-susceptible-individuals." class="section level1">
 <h1>Checking the resistant vs susceptible individuals.</h1>
