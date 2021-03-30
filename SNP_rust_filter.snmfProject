@@ -9,5 +9,5 @@ new("snmfProject", snmfProject.file = "SNP_rust_filter.snmfProject",
     "K10/run1/SNP_rust_filter_r1.10.snmfClass", "K11/run1/SNP_rust_filter_r1.11.snmfClass", 
     "K12/run1/SNP_rust_filter_r1.12.snmfClass", "K13/run1/SNP_rust_filter_r1.13.snmfClass", 
     "K14/run1/SNP_rust_filter_r1.14.snmfClass", "K15/run1/SNP_rust_filter_r1.15.snmfClass"
-    ), n = 154L, L = 7805L, creationTime = structure(1617147482.35767, class = c("POSIXct", 
+    ), n = 154L, L = 7805L, creationTime = structure(1617147988.70827, class = c("POSIXct", 
     "POSIXt")))
